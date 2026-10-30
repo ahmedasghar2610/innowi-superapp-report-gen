@@ -1,0 +1,103 @@
+{
+  "slug": "rosa-pizza",
+  "business": {
+    "name": "Rosa Pizza Co.",
+    "tagline": "Wood-fired since 1998",
+    "email": "",
+    "phone": "+1 (555) 200-3040",
+    "address": "12 Mill Street",
+    "city": "Portland, OR 97204",
+    "country": "United States",
+    "hours": "Tue to Sun\n11 am–10 pm"
+  },
+  "brand": {
+    "logo": "",
+    "favicon": "/images/header-logo-150.png",
+    "appleIcon": "/images/header-logo-300.png",
+    "primary": "#123456",
+    "secondary": "#8FBF3F",
+    "accent": "#E4572E",
+    "cream": "#EFF5E6",
+    "gray": "#F5F5F5",
+    "textColor": "#484848",
+    "headingFont": "\"Barlow Condensed\", Impact, \"Arial Narrow Bold\", sans-serif",
+    "bodyFont": "\"Roboto\", -apple-system, \"Segoe UI\", Helvetica, Arial, sans-serif",
+    "googleFonts": true,
+    "googleFontFamilies": "family=Barlow+Condensed:wght@400;500;600;700&family=Roboto:wght@400;500;700"
+  },
+  "meta": {
+    "title": "Rosa Pizza Co.",
+    "description": "Wood-fired pizza in downtown Portland."
+  },
+  "orderUrl": "https://example.com/order",
+  "hero": {
+    "headline": "Portland's Wood-Fired\nPizza Since 1998",
+    "subtext": "Sourdough bases, 90 seconds at 450°C.",
+    "image": ""
+  },
+  "about": {
+    "heading": "A Family Kitchen on Mill Street",
+    "story": "Three generations, one oven.",
+    "image": ""
+  },
+  "offerings": {
+    "heading": "Our Pizzas",
+    "items": [
+      {
+        "name": "Margherita",
+        "price": "$14",
+        "description": "San Marzano tomato, fior di latte and basil from the back garden.",
+        "image": ""
+      },
+      {
+        "name": "Diavola",
+        "price": "$17",
+        "description": "Spicy soppressata, chilli honey and mozzarella.",
+        "image": ""
+      }
+    ]
+  },
+  "social": {
+    "heading": "Why Portland Picks Rosa",
+    "points": [
+      {
+        "title": "Wood-Fired",
+        "description": "One oven, 450°C.",
+        "icon": "",
+        "emoji": "🔥"
+      },
+      {
+        "title": "Sourdough",
+        "description": "72-hour ferment.",
+        "icon": "",
+        "emoji": "🍕"
+      }
+    ],
+    "reviewsHeading": "What Portland is Saying",
+    "ratingText": "Google rating 4.7 of 5",
+    "reviews": [
+      {
+        "name": "Dana K.",
+        "rating": 5,
+        "text": "Best crust in the city."
+      }
+    ]
+  },
+  "catering": {
+    "heading": "Pizza for Your Event",
+    "body": "We bring the oven to you."
+  },
+  "contact": {
+    "mapAddress": "12 Mill Street, Portland, OR 97204",
+    "formType": "Contact + catering/quote form",
+    "formEmail": ""
+  },
+  "footer": {
+    "about": "Wood-fired pizza in downtown Portland.",
+    "facebook": "#",
+    "instagram": "",
+    "twitter": "",
+    "credit": "Powered By Innowi Inc.",
+    "creditHref": "https://innowi.com/"
+  }
+}

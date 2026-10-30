@@ -1,0 +1,18 @@
+fastapi==0.141.1
+uvicorn[standard]==0.35.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+sqlalchemy[asyncio]==2.0.52
+asyncpg==0.31.0
+alembic==1.17.1
+python-jose[cryptography]==3.5.0
+PyJWT==2.13.0
+bcrypt==5.0.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.32
+email-validator==2.3.0
+openpyxl==3.1.5
+cryptography>=42.0.0  # Fernet encryption of stored credentials (app/common/security/crypto.py)
+httpx==0.28.1  # Salesforce, Fathom, Google APIs (salesforce/client.py, ops/fathom.py, gbp, ads, seo)
+reportlab==4.4.4  # Quote proposal PDFs (app/modules/quotes/pdf.py)
+tzdata>=2024.1  # zoneinfo data for the SLA clock on systems without a tz database

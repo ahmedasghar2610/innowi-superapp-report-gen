@@ -1,0 +1,47 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+
+# production
+/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (keep .env.example)
+.env
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# site-builder feature: persisted clone / SEO runs (24h TTL unless saved to
+# My Clones, see src/features/site-builder/server/workspaces.ts)
+/.workspaces/
+
+# site-builder feature: durable index of clones saved to "My Clones" (also
+# workspaces.ts) — runtime state, not source.
+/.workspaces-index.json
+
+# site-builder feature: build-time bundle of files copied into generated
+# zips (scripts/bundle-runtime-files.cjs)
+/src/features/site-builder/server/generated/

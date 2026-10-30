@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: innowi_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: innowi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - innowi_pgdata:/var/lib/postgresql/data
+      # Runs ONCE on first init: creates the 8 ownership schemas.
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d innowi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional connection pooler, matching the NestJS original's shape. The app's
+  # DATABASE_URL can point at 6432; migrations (DIRECT_URL) bypass it and talk
+  # to Postgres on 5432 directly.
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: innowi_pgbouncer
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: innowi
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: "200"
+      DEFAULT_POOL_SIZE: "20"
+    ports:
+      - "6432:6432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build: .
+    container_name: innowi_api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/innowi
+      DIRECT_URL: postgresql://postgres:postgres@postgres:5432/innowi
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set a 32+ char secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set a 32+ char secret}
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL_DAYS: 30
+      STORAGE_DIR: /app/storage
+      MAX_UPLOAD_MB: 25
+      SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL:-superadmin@innowi.com}
+      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD:-ChangeMe123!}
+    ports:
+      - "3000:3000"
+    volumes:
+      - innowi_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Run migrations, then seed catalog + super admin, then start the API.
+    command: >
+      sh -c "alembic upgrade head &&
+             python -m scripts.seed &&
+             python -m scripts.seed_admin &&
+             uvicorn app.main:app --host 0.0.0.0 --port 3000"
+
+volumes:
+  innowi_pgdata:
+  innowi_storage:

@@ -1,0 +1,12 @@
+{
+  "api_base": "https://superapp-web-test.vercel.app/api/v1",
+  "crawler_key": "PASTE-THE-KEY-FROM-THE-SUPER-APP-HERE",
+  "helper_name": "Usama laptop",
+  "screaming_frog_path": "C:\\Program Files (x86)\\Screaming Frog SEO Spider\\ScreamingFrogSEOSpiderCli.exe",
+  "crawl_config": "",
+  "link_metrics": "",
+  "poll_seconds": 60,
+  "crawl_timeout_minutes": 30,
+  "keep_crawls_per_domain": 3,
+  "work_folder": "crawls"
+}

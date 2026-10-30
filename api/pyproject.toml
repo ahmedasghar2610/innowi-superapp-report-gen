@@ -1,0 +1,32 @@
+# Packaging for hosts that read pyproject.toml (Vercel's Python runtime).
+# The dependency list MUST stay identical to requirements.txt, which the
+# Dockerfile uses - tests/test_deploy_config.py fails if they drift.
+[project]
+name = "innowi-superapp-api"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.141.1",
+    "uvicorn[standard]==0.35.0",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+    "sqlalchemy[asyncio]==2.0.52",
+    "asyncpg==0.31.0",
+    "alembic==1.17.1",
+    "python-jose[cryptography]==3.5.0",
+    "PyJWT==2.13.0",
+    "bcrypt==5.0.0",
+    "passlib[bcrypt]==1.7.4",
+    "python-multipart==0.0.32",
+    "email-validator==2.3.0",
+    "openpyxl==3.1.5",
+    "cryptography>=42.0.0",
+    "httpx==0.28.1",
+    "reportlab==4.4.4",
+    "tzdata>=2024.1",
+]
+
+[tool.vercel.scripts]
+# Release step (migrations + idempotent seeds). On Vercel it only touches the
+# database for production deployments - see scripts/deploy.py.
+build = "python -m scripts.deploy"

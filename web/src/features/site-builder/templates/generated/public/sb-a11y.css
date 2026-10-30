@@ -1,0 +1,98 @@
+/* Site Builder accessibility baseline for generated sites (WCAG 2.1 AA).
+ * Loaded after cloned.css so these rules win where the source site removed
+ * focus styles or lacked a skip link. The widget's own styles live in
+ * components/a11y/widget-css.ts. */
+
+/* 2.4.1 Bypass blocks: skip link is visually hidden until focused. */
+.sb-skip {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  z-index: 2147483001;
+  padding: 10px 16px;
+  border-radius: 0 0 8px 8px;
+  background: #1a1612;
+  color: #fff;
+  font: 600 15px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  text-decoration: none;
+  outline: 3px solid #fff;
+  outline-offset: -6px;
+  transition: top 0.15s;
+}
+.sb-skip:focus,
+.sb-skip:focus-visible {
+  top: 0;
+}
+
+/* Skip-link target should not draw a ring when focused programmatically. */
+#cloned-root:focus {
+  outline: none;
+}
+
+/* 2.4.7 Focus visible: restore a clear indicator where the source site used
+ * outline: none. Only for keyboard focus (:focus-visible), so mouse users are
+ * not affected. The double ring stays visible on light and dark backgrounds. */
+#cloned-root a:focus-visible,
+#cloned-root button:focus-visible,
+#cloned-root input:focus-visible,
+#cloned-root select:focus-visible,
+#cloned-root textarea:focus-visible,
+#cloned-root summary:focus-visible,
+#cloned-root [tabindex]:focus-visible,
+#cloned-root [role="button"]:focus-visible,
+#cloned-root [role="tab"]:focus-visible,
+#cloned-root [role="link"]:focus-visible {
+  outline: 3px solid #005fcc !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 5px #fff !important;
+}
+
+/* Elements the effects runtime made focusable (carousels, accordion titles). */
+#cloned-root [data-sb-slider]:focus-visible {
+  outline-offset: -3px !important;
+}
+
+/* 1.4.12 Text spacing: never clip text when users increase spacing. */
+#cloned-root :is(h1, h2, h3, h4, h5, h6, p, li, a, button, label, span) {
+  overflow-wrap: anywhere;
+}
+
+/* 2.3.3 / 2.2.2: honour the OS preference in the cloned CSS as well. */
+@media (prefers-reduced-motion: reduce) {
+  #cloned-root *,
+  #cloned-root *::before,
+  #cloned-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  #cloned-root [data-sb-anim] {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
+}
+
+/* Same rules when the widget's "Stop animations" is on (html.sb-a11y-no-motion
+ * is also handled in widget-css.ts; kept here so it works before hydration). */
+html.sb-a11y-no-motion #cloned-root *,
+html.sb-a11y-no-motion #cloned-root *::before,
+html.sb-a11y-no-motion #cloned-root *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Visually hidden helper for text alternatives added at clone time. */
+.sb-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

@@ -1,0 +1,47 @@
+{
+  "name": "merchant-profiling-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Innowi — Merchant Profiling module frontend (Next.js App Router). Phase 0 foundation.",
+  "scripts": {
+    "predev": "node scripts/bundle-runtime-files.cjs",
+    "dev": "next dev -p 3001",
+    "prebuild": "node scripts/bundle-runtime-files.cjs",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "3.9.1",
+    "@tanstack/react-query": "5.62.7",
+    "@tanstack/react-query-devtools": "5.62.7",
+    "axios": "1.7.9",
+    "cheerio": "^1.2.0",
+    "clsx": "2.1.1",
+    "jszip": "^3.10.2",
+    "lucide-react": "0.468.0",
+    "next": "15.5.20",
+    "papaparse": "^5.7.0",
+    "playwright": "^1.63.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-hook-form": "7.54.2",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1",
+    "tailwind-merge": "2.6.0",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "22.10.2",
+    "@types/papaparse": "^5.5.2",
+    "@types/react": "19.0.2",
+    "@types/react-dom": "19.0.2",
+    "eslint": "9.17.0",
+    "eslint-config-next": "15.5.20",
+    "postcss": "8.4.49",
+    "tailwindcss": "^4.1.0",
+    "typescript": "5.7.2"
+  }
+}

@@ -1,0 +1,389 @@
+{
+  "_comment": "Snapshot of the standalone website-api service's SQLite database (website_api.db), exported 2026-09-16. Loaded by scripts/seed_websites.py. name/tagline/contactEmail are intentionally absent: the server derives them from values.business.* on every write.",
+  "source": "website-api/website_api.db",
+  "exportedAt": "2026-09-16",
+  "websites": [
+    {
+      "id": "web_d9825133a3354480",
+      "slug": "primo-cafe",
+      "status": "in_review",
+      "notes": "",
+      "values": {
+        "slug": "primo-cafe",
+        "business": {
+          "name": "Primo Cafe",
+          "tagline": "Lancaster's premier all-day diner",
+          "email": "my.coffee@primo.cofee.com",
+          "phone": "+1 (661) 951-7288",
+          "address": "44599 Vly Central Wy #6526",
+          "city": "Lancaster, CA 93536",
+          "country": "United States",
+          "hours": "Monday to Sunday\n7 am–8:30 pm"
+        },
+        "brand": {
+          "logo": "/images/header-logo.png",
+          "favicon": "/images/header-logo-150.png",
+          "appleIcon": "/images/header-logo-300.png",
+          "primary": "#39261C",
+          "secondary": "#F89E1F",
+          "accent": "#F01827",
+          "cream": "#F7F1E1",
+          "gray": "#F5F5F5",
+          "textColor": "#484848",
+          "headingFont": "\"Barlow Condensed\", Impact, \"Arial Narrow Bold\", sans-serif",
+          "bodyFont": "\"Roboto\", -apple-system, \"Segoe UI\", Helvetica, Arial, sans-serif",
+          "googleFonts": true,
+          "googleFontFamilies": "family=Barlow+Condensed:wght@400;500;600;700&family=Roboto:wght@400;500;700"
+        },
+        "meta": {
+          "title": "Primo Cafe",
+          "description": "Primo Cafe is Lancaster's premier all-day diner, located in the Valley Central Shopping Center off Highway 14. Famous for our hearty Chorizo Burritos, authentic Menudo, and daily breakfast classics."
+        },
+        "orderUrl": "https://online-ordering.innowi.com/branch/primocafe",
+        "hero": {
+          "headline": "Lancaster's Favorite\nDiner off Highway 14",
+          "subtext": "Savor hearty, expertly crafted diner classics—from massive Chorizo Burritos to our famous Chicken Fried Steak. Skip the app fees and get your food faster.",
+          "image": "/images/pancakes-hero-bg.jpg"
+        },
+        "about": {
+          "heading": "Fresh, Flavorful Dining in Valley Central",
+          "story": "Located right in the Valley Central Shopping Center, Primo Cafe is your go-to spot for Antelope Valley's best comfort food. Whether you're commuting and need a quick breakfast, or sitting down for our signature Carne Asada Pizza, we prepare every meal with the finest ingredients. Support local and order directly through our official site.",
+          "image": "/images/restaurant-vibe.webp"
+        },
+        "offerings": {
+          "heading": "Explore Antelope Valley's Favorite Comfort Food",
+          "items": [
+            {
+              "name": "Bac & Eggs",
+              "price": "$14.50",
+              "description": "Two eggs any style, thick-cut bacon, hash browns and toast.",
+              "image": "/images/menu-item-placeholder.jpg"
+            },
+            {
+              "name": "Fish & Chips",
+              "price": "$18.45",
+              "description": "Beer-battered cod, steak fries, house tartar and slaw.",
+              "image": "/images/menu-item-placeholder.jpg"
+            },
+            {
+              "name": "Chicken Fried Steak & Egg",
+              "price": "$18.25",
+              "description": "Hand-breaded steak under country gravy, with an egg on top.",
+              "image": "/images/menu-item-placeholder.jpg"
+            },
+            {
+              "name": "Menudo Large",
+              "price": "$17.95",
+              "description": "Simmered all morning. Served with onion, cilantro and lime.",
+              "image": "/images/menu-item-placeholder.jpg"
+            },
+            {
+              "name": "Chorizo Burrito",
+              "price": "$11.95",
+              "description": "Scrambled eggs, house chorizo, crispy potatoes and salsa roja.",
+              "image": "/images/menu-item-placeholder.jpg"
+            },
+            {
+              "name": "Primo's Fajita Dinner",
+              "price": "$23.95",
+              "description": "Sizzling steak or chicken with peppers, onions and warm tortillas.",
+              "image": "/images/menu-item-placeholder.jpg"
+            },
+            {
+              "name": "Avocado & Chz Omelette",
+              "price": "$14.95",
+              "description": "Three eggs, fresh avocado and melted jack cheese.",
+              "image": "/images/menu-item-placeholder.jpg"
+            },
+            {
+              "name": "Buffalo Chicken Pizza",
+              "price": "$16.75",
+              "description": "Buffalo chicken, red onion and mozzarella on a thin crust.",
+              "image": "/images/menu-item-placeholder.jpg"
+            }
+          ]
+        },
+        "social": {
+          "heading": "Why Antelope Valley Chooses Primo",
+          "points": [
+            {
+              "title": "Spotless Kitchen",
+              "description": "Dedicated to the highest safety and cleanliness standards in Lancaster.",
+              "icon": "/images/icon-spotless-kitchen.png",
+              "emoji": "🧼"
+            },
+            {
+              "title": "Local Vibe",
+              "description": "A welcoming, no-frills diner atmosphere perfect for the whole family.",
+              "icon": "/images/icon-local-vibe.png",
+              "emoji": "🏡"
+            },
+            {
+              "title": "Expert Griddle",
+              "description": "Masters of the kitchen serving up perfect omelettes and authentic fajitas.",
+              "icon": "/images/icon-expert-griddle.png",
+              "emoji": "🍳"
+            },
+            {
+              "title": "AV Event Catering",
+              "description": "Reliable, high-volume catering for your Antelope Valley meetings and parties.",
+              "icon": "/images/icon-av-catering.png",
+              "emoji": "🎉"
+            }
+          ],
+          "reviewsHeading": "What Lancaster is Saying",
+          "ratingText": "Google rating score: 4.0 of 5, based on 1013 reviews",
+          "reviews": [
+            {
+              "name": "Paul Wilson",
+              "rating": 5,
+              "text": "Primo's is one of the best restaurants in Lancaster I'm currently living in Georgia right now but I'm moving back to Lancaster here soon primo's is my first restaurant that I'm going to be going to I love their food and I love their customer service they are great people."
+            },
+            {
+              "name": "Luis Martinez",
+              "rating": 4,
+              "text": "Food was pretty good, service was fast and staff was friendly. Will definitely be back."
+            },
+            {
+              "name": "Natasha Russell",
+              "rating": 5,
+              "text": "This Cafe is a must try for anyone who's looking for some pretty darn good tasty food as well as the warm cozy ambiance. Also the Servers are friendly and pleasant. The food is fresh and hot nice hefty amount and good prices. I've been Twice and both visits was a nice experience. Will definitely be my go to place to pop in."
+            },
+            {
+              "name": "Kevin Downing",
+              "rating": 5,
+              "text": "We enjoyed a nice family outing here. Very friendly waitress and nice homey atmosphere. The men's bathroom needs a little remodeling."
+            }
+          ]
+        },
+        "catering": {
+          "heading": "Local Catering for Antelope Valley Events",
+          "body": "Hosting a team at the AV Event Center or planning a local office meeting? Fill out the form below for reliable catering and the best direct-to-restaurant rates."
+        },
+        "contact": {
+          "mapAddress": "Primo Cafe, 44599 Vly Central Wy #6526, Lancaster, CA 93536, USA",
+          "formType": "Contact + catering/quote form",
+          "formEmail": ""
+        },
+        "footer": {
+          "about": "Primo Cafe is Lancaster's premier all-day diner, located in the Valley Central Shopping Center off Highway 14. Famous for our hearty Chorizo Burritos, authentic Menudo, and daily breakfast classics. Order via our Official Site for Priority Direct Pickup and zero 3rd-party markup fees.",
+          "facebook": "#",
+          "instagram": "#",
+          "twitter": "",
+          "credit": "Powered By Innowi Inc.",
+          "creditHref": "https://innowi.com/"
+        }
+      }
+    },
+    {
+      "id": "web_1bbebdb226094d5c",
+      "slug": "rosa-pizza",
+      "status": "live",
+      "notes": "",
+      "values": {
+        "slug": "rosa-pizza",
+        "business": {
+          "name": "Rosa Pizza Co.",
+          "tagline": "Wood-fired since 1998",
+          "email": "",
+          "phone": "+1 (555) 200-3040",
+          "address": "12 Mill Street",
+          "city": "Portland, OR 97204",
+          "country": "United States",
+          "hours": "Tue to Sun\n11 am–10 pm"
+        },
+        "brand": {
+          "logo": "",
+          "favicon": "/images/header-logo-150.png",
+          "appleIcon": "/images/header-logo-300.png",
+          "primary": "#123456",
+          "secondary": "#8FBF3F",
+          "accent": "#E4572E",
+          "cream": "#EFF5E6",
+          "gray": "#F5F5F5",
+          "textColor": "#484848",
+          "headingFont": "\"Barlow Condensed\", Impact, \"Arial Narrow Bold\", sans-serif",
+          "bodyFont": "\"Roboto\", -apple-system, \"Segoe UI\", Helvetica, Arial, sans-serif",
+          "googleFonts": true,
+          "googleFontFamilies": "family=Barlow+Condensed:wght@400;500;600;700&family=Roboto:wght@400;500;700"
+        },
+        "meta": {
+          "title": "Rosa Pizza Co.",
+          "description": "Wood-fired pizza in downtown Portland."
+        },
+        "orderUrl": "https://example.com/order",
+        "hero": {
+          "headline": "Portland's Wood-Fired\nPizza Since 1998",
+          "subtext": "Sourdough bases, 90 seconds at 450°C.",
+          "image": ""
+        },
+        "about": {
+          "heading": "A Family Kitchen on Mill Street",
+          "story": "Three generations, one oven.",
+          "image": ""
+        },
+        "offerings": {
+          "heading": "Our Pizzas",
+          "items": [
+            {
+              "name": "Margherita",
+              "price": "$14",
+              "description": "San Marzano tomato, fior di latte and basil from the back garden.",
+              "image": ""
+            },
+            {
+              "name": "Diavola",
+              "price": "$17",
+              "description": "Spicy soppressata, chilli honey and mozzarella.",
+              "image": ""
+            }
+          ]
+        },
+        "social": {
+          "heading": "Why Portland Picks Rosa",
+          "points": [
+            {
+              "title": "Wood-Fired",
+              "description": "One oven, 450°C.",
+              "icon": "",
+              "emoji": "🔥"
+            },
+            {
+              "title": "Sourdough",
+              "description": "72-hour ferment.",
+              "icon": "",
+              "emoji": "🍕"
+            }
+          ],
+          "reviewsHeading": "What Portland is Saying",
+          "ratingText": "Google rating 4.7 of 5",
+          "reviews": [
+            {
+              "name": "Dana K.",
+              "rating": 5,
+              "text": "Best crust in the city."
+            }
+          ]
+        },
+        "catering": {
+          "heading": "Pizza for Your Event",
+          "body": "We bring the oven to you."
+        },
+        "contact": {
+          "mapAddress": "12 Mill Street, Portland, OR 97204",
+          "formType": "Contact + catering/quote form",
+          "formEmail": ""
+        },
+        "footer": {
+          "about": "Wood-fired pizza in downtown Portland.",
+          "facebook": "#",
+          "instagram": "",
+          "twitter": "",
+          "credit": "Powered By Innowi Inc.",
+          "creditHref": "https://innowi.com/"
+        }
+      }
+    },
+    {
+      "id": "web_d09b3d74e3a641c1",
+      "slug": "harbor-street-dental",
+      "status": "in_review",
+      "notes": "",
+      "values": {
+        "business": {
+          "name": "Harbor Street Dental",
+          "tagline": "Gentle dentistry on the waterfront",
+          "email": "front.desk@harborstreetdental.com",
+          "phone": "+1 415 555 0188",
+          "address": "812 Harbor Street, Suite 200",
+          "city": "San Mateo, CA 94401",
+          "country": "United States",
+          "hours": "Monday to Thursday\n8am - 5pm\nFriday\n8am - 1pm"
+        },
+        "brand": {
+          "logo": "",
+          "primary": "#18181B",
+          "secondary": "#A16207",
+          "accent": "#FEF3C7",
+          "textColor": "#27272A",
+          "headingFont": "Poppins",
+          "bodyFont": "Inter"
+        },
+        "orderUrl": "https://harborstreetdental.example.com/book",
+        "hero": {
+          "headline": "Dentistry without\nthe dread",
+          "subtext": "Same-week appointments, transparent pricing and a team that explains everything first.",
+          "ctaLabel": "Book a visit",
+          "ctaLink": "https://harborstreetdental.example.com/book",
+          "image": ""
+        },
+        "about": {
+          "eyebrow": "Our practice",
+          "heading": "Care that starts with listening",
+          "story": "Dr. Achebe opened Harbor Street in 2011 with one rule: nobody leaves without understanding their own treatment plan. Two chairs became six, and the rule never changed.",
+          "ctaLabel": "Meet the team",
+          "ctaLink": "https://harborstreetdental.example.com/team",
+          "image": ""
+        },
+        "offerings": {
+          "heading": "What we do",
+          "ctaLink": "https://harborstreetdental.example.com/services",
+          "items": [
+            {
+              "name": "Cleaning & check-up",
+              "price": "$145",
+              "description": "Includes x-rays for new patients.",
+              "image": ""
+            },
+            {
+              "name": "Whitening",
+              "price": "$390",
+              "description": "In-chair, one 90-minute session.",
+              "image": ""
+            }
+          ]
+        },
+        "social": {
+          "heading": "Why the peninsula picks Harbor Street",
+          "points": [
+            {
+              "title": "Same-week Visits",
+              "emoji": "📅",
+              "icon": "",
+              "description": "Most requests seen within five days."
+            },
+            {
+              "title": "Upfront Pricing",
+              "emoji": "💬",
+              "icon": "",
+              "description": "Written estimate before anything starts."
+            }
+          ],
+          "reviewsHeading": "What our patients say",
+          "ratingText": "Google rating 4.8 of 5, based on 322 reviews",
+          "reviews": [
+            {
+              "name": "Marta Klein",
+              "rating": "5",
+              "text": "First dentist I've not dreaded. Everything explained clearly."
+            }
+          ]
+        },
+        "catering": {},
+        "contact": {
+          "mapAddress": "Harbor Street Dental, San Mateo, CA 94401",
+          "formType": "Contact form",
+          "formEmail": "front.desk@harborstreetdental.com"
+        },
+        "footer": {
+          "about": "A six-chair practice on the San Mateo waterfront, open since 2011.",
+          "facebook": "",
+          "instagram": "https://instagram.com/harborstreetdental",
+          "twitter": "",
+          "credit": "Powered By Innowi Inc.",
+          "creditHref": "https://myinnowi.com"
+        }
+      }
+    }
+  ]
+}

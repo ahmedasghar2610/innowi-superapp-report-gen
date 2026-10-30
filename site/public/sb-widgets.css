@@ -1,0 +1,221 @@
+/* Site Builder widgets — neutral styles for blocks inserted from the editor.
+   Everything is scoped under .sb-w so it sits politely inside any cloned theme
+   while inheriting the site's fonts and colours. */
+
+.sb-w, .sb-w * { box-sizing: border-box; }
+/* Falls back to its own literal only where no site theme (sb-theme.css) has
+   set the --sb-theme-* variable on :root, so existing/future widgets pick up
+   the site-wide theme automatically without any per-widget change. */
+.sb-w { --sb-accent: var(--sb-theme-accent, #1a1612); --sb-muted: var(--sb-theme-muted, #6b665e); --sb-radius: var(--sb-theme-radius, 10px); --sb-max: var(--sb-theme-max-width, 1140px); }
+
+.sb-section { position: relative; padding: clamp(40px, 6vw, 88px) 24px; width: 100%; }
+.sb-section > .sb-container { max-width: var(--sb-max); margin: 0 auto; }
+.sb-section--tight { padding-top: 32px; padding-bottom: 32px; }
+.sb-section--dark { background: #1a1612; color: #f4efe4; --sb-accent: #f4efe4; --sb-muted: #cfc8bb; }
+.sb-section--light { background: #f4f4f2; }
+
+.sb-columns { display: grid; gap: 32px; align-items: start; }
+.sb-columns--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sb-columns--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sb-columns--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.sb-col { min-width: 0; }
+@media (max-width: 1024px) {
+  .sb-columns--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sb-columns--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .sb-columns--2, .sb-columns--3, .sb-columns--4 { grid-template-columns: minmax(0, 1fr); }
+}
+
+.sb-heading { margin: 0 0 .6em; line-height: 1.15; font-weight: 700; }
+.sb-heading.sb-heading--center { text-align: center; }
+.sb-eyebrow { display: block; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--sb-muted); margin-bottom: .6em; font-weight: 600; }
+.sb-text { margin: 0 0 1em; line-height: 1.65; }
+.sb-text:last-child { margin-bottom: 0; }
+.sb-text--lead { font-size: 1.15rem; color: var(--sb-muted); }
+.sb-text--center { text-align: center; }
+
+.sb-image { margin: 0; }
+.sb-image img { display: block; width: 100%; height: auto; border-radius: var(--sb-radius); }
+.sb-image figcaption { font-size: .85rem; color: var(--sb-muted); margin-top: .5em; text-align: center; }
+
+.sb-button { display: inline-flex; align-items: center; justify-content: center; gap: .5em; padding: .85em 1.6em; border-radius: 999px; background: var(--sb-accent); color: #fff; font-weight: 600; text-decoration: none; border: 2px solid var(--sb-accent); line-height: 1.1; transition: transform .15s ease, opacity .15s ease; cursor: pointer; }
+.sb-section--dark .sb-button { color: #1a1612; }
+.sb-button:hover { transform: translateY(-1px); opacity: .92; }
+.sb-button--outline { background: transparent; color: var(--sb-accent); }
+.sb-button-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.sb-button-row--center { justify-content: center; }
+
+.sb-video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--sb-radius); overflow: hidden; background: #000; }
+.sb-video iframe, .sb-video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+.sb-spacer { display: block; height: var(--sb-space, 48px); width: 100%; }
+.sb-divider { border: 0; border-top: 1px solid currentColor; opacity: .18; margin: 24px 0; width: 100%; }
+.sb-divider--short { width: 72px; margin-left: 0; opacity: .6; border-top-width: 3px; }
+.sb-divider--center { margin-left: auto; margin-right: auto; }
+
+.sb-icon-box { display: grid; gap: 14px; }
+.sb-icon-box .sb-icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: rgba(0, 0, 0, .06); font-size: 24px; line-height: 1; }
+.sb-section--dark .sb-icon-box .sb-icon { background: rgba(255, 255, 255, .12); }
+.sb-icon-box .sb-heading { font-size: 1.2rem; margin-bottom: .35em; }
+.sb-icon-box .sb-text { color: var(--sb-muted); }
+
+.sb-embed { width: 100%; }
+
+/* ---- section templates ---- */
+.sb-hero .sb-container { display: grid; gap: 48px; align-items: center; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); }
+.sb-hero .sb-heading { font-size: clamp(2rem, 4.5vw, 3.6rem); }
+@media (max-width: 900px) { .sb-hero .sb-container { grid-template-columns: minmax(0, 1fr); } }
+
+.sb-cta .sb-container { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+.sb-cta .sb-heading { margin: 0; font-size: clamp(1.4rem, 2.6vw, 2rem); }
+
+.sb-testimonial { padding: 28px; border-radius: var(--sb-radius); background: rgba(0, 0, 0, .04); display: grid; gap: 16px; }
+.sb-section--dark .sb-testimonial { background: rgba(255, 255, 255, .08); }
+.sb-testimonial blockquote { margin: 0; font-size: 1.05rem; line-height: 1.6; }
+.sb-testimonial .sb-person { display: flex; align-items: center; gap: 12px; }
+.sb-testimonial .sb-person img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.sb-testimonial .sb-person strong { display: block; }
+.sb-testimonial .sb-person span { font-size: .85rem; color: var(--sb-muted); }
+
+.sb-contact-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.sb-contact-list li { display: flex; gap: 12px; align-items: flex-start; }
+.sb-contact-list a { color: inherit; }
+
+.sb-gallery { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sb-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--sb-radius); display: block; }
+@media (max-width: 767px) { .sb-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.sb-stats { display: grid; gap: 24px; grid-template-columns: repeat(4, minmax(0, 1fr)); text-align: center; }
+.sb-stats strong { display: block; font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1; }
+.sb-stats span { color: var(--sb-muted); }
+@media (max-width: 767px) { .sb-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---- feedback: popup / toast / snackbar ---- */
+/* Shared runtime contract (sb-effects.js): hidden until .sb-open is added;
+   .sb-closing plays the exit animation just before .sb-open is removed;
+   --sb-stack offsets toasts/snackbars sharing a corner so they stack instead
+   of overlapping; .sb-timed + --sb-life draw the auto-close progress bar,
+   paused (.sb-paused) while hovered or focused. .sb-preview is the editor's
+   "Preview" button: it opts one panel out of the inline editing layout below
+   so it can be seen exactly as a visitor would. */
+
+@keyframes sbFbIn { from { opacity: 0; scale: .96; } to { opacity: 1; scale: 1; } }
+@keyframes sbFbOut { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .96; } }
+@keyframes sbFbFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sbFbFadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes sbFbLife { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* ---------- Popup ---------- */
+.sb-popup { display: none; }
+.sb-popup.sb-open { display: grid; position: fixed; inset: 0; z-index: 2000; place-items: center; padding: 24px; }
+.sb-popup-backdrop { position: absolute; inset: 0; background: rgba(15, 12, 10, .55); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.sb-popup-card { position: relative; width: 100%; max-width: 440px; max-height: calc(100vh - 48px); overflow: auto; background: #fff; color: #1a1612; border-radius: var(--sb-radius); padding: 40px 28px 28px; text-align: center; box-shadow: 0 24px 60px rgba(0, 0, 0, .25); }
+.sb-popup-card:focus { outline: none; }
+.sb-popup-card .sb-icon { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 16px; display: grid; place-items: center; background: rgba(0, 0, 0, .06); font-size: 24px; }
+.sb-popup-card .sb-heading { font-size: 1.4rem; }
+.sb-popup-card .sb-text { color: var(--sb-muted); }
+/* Only the popup's own button row is centred — rows added inside columns follow their column. */
+.sb-popup-card > .sb-button-row { justify-content: center; margin-top: 12px; }
+.sb-popup-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .06); font-size: 18px; line-height: 1; cursor: pointer; color: inherit; }
+.sb-popup-close:hover { background: rgba(0, 0, 0, .12); }
+.sb-popup-close:focus-visible, .sb-toast-close:focus-visible { outline: 2px solid var(--sb-accent); outline-offset: 2px; }
+html.sb-popup-open { overflow: hidden; }
+.sb-popup.sb-open .sb-popup-backdrop { animation: sbFbFade .2s ease both; }
+.sb-popup.sb-open .sb-popup-card { animation: sbFbIn .24s cubic-bezier(.22, .61, .36, 1) both; }
+.sb-popup.sb-closing .sb-popup-backdrop { animation: sbFbFadeOut .18s ease both; }
+.sb-popup.sb-closing .sb-popup-card { animation: sbFbOut .18s ease both; }
+
+/* ---------- Toast ---------- */
+.sb-toast { display: none; position: fixed; z-index: 1900; width: min(360px, calc(100% - 32px)); gap: 12px; align-items: flex-start; padding: 14px 12px 14px 14px; border-radius: var(--sb-radius); background: #fff; color: #1a1612; border: 1px solid rgba(0, 0, 0, .06); border-left: 4px solid var(--sb-variant, rgba(0, 0, 0, .15)); box-shadow: 0 12px 32px rgba(0, 0, 0, .16); overflow: hidden; }
+.sb-toast.sb-open { display: flex; }
+.sb-toast .sb-icon { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--sb-variant-soft, rgba(0, 0, 0, .06)); color: var(--sb-variant, var(--sb-muted)); font-size: 15px; font-weight: 700; flex: none; }
+.sb-toast-body { flex: 1; min-width: 0; padding-top: 2px; }
+.sb-toast-body .sb-heading { font-size: 1rem; margin-bottom: .2em; }
+.sb-toast-body .sb-text { margin: 0; font-size: .9rem; color: var(--sb-muted); }
+.sb-toast-close { order: 3; margin-left: auto; flex: none; width: 24px; height: 24px; border: 0; border-radius: 50%; background: transparent; font-size: 16px; line-height: 1; cursor: pointer; color: var(--sb-muted); }
+.sb-toast-close:hover { background: rgba(0, 0, 0, .08); }
+
+/* ---------- Snackbar ----------
+   Deliberately different from a toast: one compact dark bar at the screen
+   edge with a short message and at most one text action ("Undo", "View").
+   No icon, title or colour type; slides in from the edge; only one shows at
+   a time — a new snackbar replaces the current one (sb-effects.js). */
+.sb-snackbar { display: none; position: fixed; z-index: 1900; min-width: min(320px, calc(100% - 32px)); max-width: min(640px, calc(100% - 32px)); min-height: 48px; gap: 4px; align-items: center; padding: 4px 6px 4px 16px; border-radius: 6px; background: #1f1d1b; color: #f4efe4; box-shadow: 0 6px 18px rgba(0, 0, 0, .28); }
+.sb-snackbar.sb-open { display: flex; }
+.sb-snackbar .sb-icon { display: none; }
+.sb-snackbar .sb-text { margin: 0; flex: 1; padding: 10px 8px 10px 0; font-size: .9rem; line-height: 1.4; color: inherit; }
+.sb-snackbar-action { flex: none; padding: 8px 10px; border: 0; border-radius: 4px; background: transparent; color: #8ab4ff; font: inherit; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-decoration: none; white-space: nowrap; cursor: pointer; }
+.sb-snackbar-action:hover { background: rgba(255, 255, 255, .08); }
+.sb-snackbar-action:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+.sb-snackbar .sb-toast-close { order: 0; margin-left: 0; width: 32px; height: 32px; color: rgba(244, 239, 228, .7); }
+.sb-snackbar .sb-toast-close:hover { background: rgba(255, 255, 255, .12); }
+
+/* ---------- Placement + stacking (data-sb-position) ---------- */
+.sb-toast[data-sb-position="bottom-right"], .sb-snackbar[data-sb-position="bottom-right"] { right: 20px; bottom: 20px; }
+.sb-toast[data-sb-position="bottom-left"], .sb-snackbar[data-sb-position="bottom-left"] { left: 20px; bottom: 20px; }
+.sb-toast[data-sb-position="bottom-center"], .sb-snackbar[data-sb-position="bottom-center"] { left: 50%; bottom: 20px; transform: translateX(-50%); }
+.sb-toast[data-sb-position="top-right"], .sb-snackbar[data-sb-position="top-right"] { right: 20px; top: 20px; }
+.sb-toast[data-sb-position="top-left"], .sb-snackbar[data-sb-position="top-left"] { left: 20px; top: 20px; }
+.sb-toast[data-sb-position="top-center"], .sb-snackbar[data-sb-position="top-center"] { left: 50%; top: 20px; transform: translateX(-50%); }
+.sb-toast[data-sb-position^="bottom"] { translate: 0 calc(var(--sb-stack, 0px) * -1); }
+.sb-toast[data-sb-position^="top"] { translate: 0 var(--sb-stack, 0px); }
+.sb-toast { transition: translate .2s ease; }
+@media (max-width: 600px) {
+  :is(.sb-toast, .sb-snackbar)[data-sb-position] { left: 16px; right: 16px; width: auto; transform: none; }
+}
+
+/* ---------- Enter / exit + auto-close progress ---------- */
+@keyframes sbSnackUp { from { opacity: 0; translate: 0 24px; } to { opacity: 1; translate: 0 0; } }
+@keyframes sbSnackDown { from { opacity: 0; translate: 0 -24px; } to { opacity: 1; translate: 0 0; } }
+.sb-toast.sb-open { animation: sbFbIn .22s cubic-bezier(.22, .61, .36, 1) both; }
+.sb-toast.sb-open.sb-closing { animation: sbFbOut .18s ease both; }
+.sb-snackbar.sb-open { animation: sbSnackUp .25s cubic-bezier(.22, .61, .36, 1) both; }
+.sb-snackbar[data-sb-position^="top"].sb-open { animation-name: sbSnackDown; }
+.sb-snackbar.sb-open.sb-closing { animation: sbFbFadeOut .16s ease both; }
+/* Progress bar: toasts only — a snackbar just slides away when its time is up. */
+.sb-toast.sb-timed::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--sb-variant, currentColor); opacity: .45; transform-origin: left center; animation: sbFbLife var(--sb-life, 6s) linear forwards; }
+.sb-toast.sb-paused::after { animation-play-state: paused; }
+
+/* ---------- Types (data-sb-variant) ----------
+   The variant colour (toasts only) is used for the left edge, the icon bubble and the
+   progress bar — heading and message text keep their normal, readable colour. */
+.sb-toast[data-sb-variant="success"] { --sb-variant: #16a34a; --sb-variant-soft: rgba(22, 163, 74, .12); }
+.sb-toast[data-sb-variant="error"] { --sb-variant: #dc2626; --sb-variant-soft: rgba(220, 38, 38, .12); }
+.sb-toast[data-sb-variant="warning"] { --sb-variant: #d97706; --sb-variant-soft: rgba(217, 119, 6, .14); }
+.sb-toast[data-sb-variant="info"] { --sb-variant: #2563eb; --sb-variant-soft: rgba(37, 99, 235, .12); }
+.sb-toast[data-sb-variant="delete"] { --sb-variant: #dc2626; --sb-variant-soft: rgba(220, 38, 38, .12); }
+
+/* Automatic icon: shown while .sb-icon still carries data-sb-icon-auto (no
+   hand-typed icon). A crisp SVG drawn in the variant colour via a mask. */
+.sb-toast { --sb-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/%3E%3Cpath d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E"); }
+.sb-toast[data-sb-variant="success"] { --sb-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E"); }
+.sb-toast[data-sb-variant="error"] { --sb-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m15 9-6 6M9 9l6 6'/%3E%3C/svg%3E"); }
+.sb-toast[data-sb-variant="warning"] { --sb-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'/%3E%3Cpath d='M12 9v4M12 17h.01'/%3E%3C/svg%3E"); }
+.sb-toast[data-sb-variant="info"] { --sb-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4M12 8h.01'/%3E%3C/svg%3E"); }
+.sb-toast[data-sb-variant="delete"] { --sb-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6'/%3E%3C/svg%3E"); }
+.sb-toast .sb-icon[data-sb-icon-auto]::before { content: ""; width: 55%; height: 55%; background: currentColor; -webkit-mask: var(--sb-icon) center / contain no-repeat; mask: var(--sb-icon) center / contain no-repeat; }
+
+/* ---------- Reduced motion ---------- */
+html:is(.sb-reduced-motion, .sb-a11y-no-motion) :is(.sb-popup, .sb-toast, .sb-snackbar),
+html:is(.sb-reduced-motion, .sb-a11y-no-motion) :is(.sb-popup, .sb-toast, .sb-snackbar) * { animation: none !important; transition: none !important; }
+html:is(.sb-reduced-motion, .sb-a11y-no-motion) .sb-toast.sb-timed::after { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.sb-popup, .sb-toast, .sb-snackbar), :is(.sb-popup, .sb-toast, .sb-snackbar) * { animation: none !important; transition: none !important; }
+}
+
+/* ---------- While editing ----------
+   Shown inline (not as fixed overlays) so their text stays reachable to
+   click-to-edit, with a small label saying they're hidden on the live site.
+   A panel being previewed (.sb-preview) skips all of this. */
+html[data-sb-editing] :is(.sb-popup, .sb-toast, .sb-snackbar):not(.sb-preview) { position: relative !important; inset: auto !important; transform: none !important; translate: none !important; animation: none !important; margin-top: 28px; outline: 1px dashed rgba(0, 0, 0, .25); outline-offset: 3px; overflow: visible; }
+html[data-sb-editing] :is(.sb-popup, .sb-toast, .sb-snackbar):not(.sb-preview)::before { position: absolute; top: -24px; left: 0; padding: 2px 8px; border-radius: 6px; background: #eef2ff; color: #3730a3; font: 600 11px/1.5 system-ui, sans-serif; letter-spacing: .02em; white-space: nowrap; pointer-events: none; }
+html[data-sb-editing] .sb-popup:not(.sb-preview)::before { content: "Popup · hidden until opened"; }
+html[data-sb-editing] .sb-toast:not(.sb-preview)::before { content: "Toast · hidden until triggered"; }
+html[data-sb-editing] .sb-snackbar:not(.sb-preview)::before { content: "Snackbar · hidden until triggered"; }
+html[data-sb-editing] .sb-popup:not(.sb-preview) { display: block !important; padding: 0 !important; }
+html[data-sb-editing] .sb-popup:not(.sb-preview) .sb-popup-backdrop { display: none !important; }
+html[data-sb-editing] .sb-popup:not(.sb-preview) .sb-popup-card { max-width: 100%; box-shadow: none; animation: none !important; }
+html[data-sb-editing] .sb-toast:not(.sb-preview) { display: flex !important; width: auto; max-width: 420px; box-shadow: none; }
+html[data-sb-editing] .sb-snackbar:not(.sb-preview) { display: flex !important; width: fit-content; }
+html[data-sb-editing] :is(.sb-toast, .sb-snackbar):not(.sb-preview)::after { display: none; }

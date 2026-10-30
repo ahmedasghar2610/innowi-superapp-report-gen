@@ -1,0 +1,57 @@
+{
+  "_comment": "Frozen inputs for one merchant, September 2026, used by tests/test_report_gen_assemble.py. Figures are synthetic, shaped like the pilot reports (Ads + SEO + blogs).",
+  "merchant": {
+    "id": "m_gaters", "name": "Gaters Restaurant", "cuisine": "American", "website": "https://gaters.example", "onlineOrdering": "Innowi",
+    "locationCount": 1, "goLiveDate": "2025-03-01", "googleAdsBudget": null, "city": "Concord", "state": "CA"
+  },
+  "services": ["SEO", "Blogs", "Reporting"],
+  "recipients": ["owner@gaters.example", "marketing@gaters.example"],
+  "ads": {
+    "accounts": [{"id": "acc1", "name": "Gaters Restaurant", "ticketSales": 35680.0, "ticketOrders": 1000, "ticketUpdatedAt": "2026-09-30", "lastMetricsDate": "2026-09-30"}],
+    "campaigns": [
+      {"id": "c1", "accountId": "acc1", "name": "Local orders", "status": "ENABLED"},
+      {"id": "c2", "accountId": "acc1", "name": "Brand", "status": "ENABLED"},
+      {"id": "c3", "accountId": "acc1", "name": "Old", "status": "REMOVED"}
+    ],
+    "cur": {
+      "c1": {"cost": 600.0, "impressions": 20000, "clicks": 800, "calls": 12, "directions": 30, "website": 150, "orders": 40, "menu": 60, "days": 30},
+      "c2": {"cost": 200.0, "impressions": 5000, "clicks": 400, "calls": 8, "directions": 10, "website": 90, "orders": 20, "menu": 20, "days": 30}
+    },
+    "prev": {
+      "c1": {"cost": 500.0, "impressions": 18000, "clicks": 700, "calls": 10, "directions": 25, "website": 120, "orders": 30, "menu": 50, "days": 31},
+      "c2": {"cost": 200.0, "impressions": 5200, "clicks": 390, "calls": 7, "directions": 9, "website": 80, "orders": 20, "menu": 18, "days": 31}
+    }
+  },
+  "seo": {
+    "sites": [{"id": "s1", "name": "Gaters Restaurant", "domain": "gaters.example", "gscProperty": "sc-domain:gaters.example", "lastGscDate": "2026-09-28"}],
+    "cur": {"clicks": 1200, "impressions": 40000, "position": 8.4},
+    "prev": {"clicks": 1000, "impressions": 36000, "position": 9.1},
+    "queries": [
+      {"query": "gaters restaurant", "clicks": 700, "impressions": 3000, "position": 1.2},
+      {"query": "gaters concord", "clicks": 150, "impressions": 900, "position": 1.5},
+      {"query": "burgers near me", "clicks": 60, "impressions": 4000, "position": 7.9},
+      {"query": "best burger concord", "clicks": 40, "impressions": 2500, "position": 6.1},
+      {"query": "sports bar delivery", "clicks": 10, "impressions": 900, "position": 12.3}
+    ],
+    "prevQueries": [
+      {"query": "gaters restaurant", "clicks": 650, "impressions": 2800, "position": 1.3},
+      {"query": "burgers near me", "clicks": 50, "impressions": 3900, "position": 8.4}
+    ],
+    "pages": [
+      {"page": "https://gaters.example/", "clicks": 800, "impressions": 20000, "position": 3.2},
+      {"page": "https://gaters.example/menu/", "clicks": 250, "impressions": 9000, "position": 6.0}
+    ],
+    "devicesCur": [{"key": "MOBILE", "clicks": 900, "impressions": 30000, "position": 8.0}, {"key": "DESKTOP", "clicks": 300, "impressions": 10000, "position": 9.5}],
+    "devicesPrev": [{"key": "MOBILE", "clicks": 760, "impressions": 27000, "position": 8.8}, {"key": "DESKTOP", "clicks": 240, "impressions": 9000, "position": 10.0}],
+    "fixed": 3, "fixedPrev": 1, "openCount": 4
+  },
+  "blogs": {
+    "posts": [
+      {"id": "p1", "title": "Game day specials", "url": "https://gaters.example/blog/game-day", "publishedOn": "2026-09-05"},
+      {"id": "p2", "title": "Best burgers in Concord", "url": "https://gaters.example/blog/best-burgers", "publishedOn": "2026-08-12"}
+    ],
+    "monthStats": {"p1": {"clicks": 25, "impressions": 1500}, "p2": {"clicks": 40, "impressions": 2200}},
+    "prevStats": {"p2": {"clicks": 20, "impressions": 1800}},
+    "finalThrough": "2026-09-27"
+  }
+}

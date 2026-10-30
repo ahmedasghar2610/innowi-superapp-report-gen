@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * The real values for these variables are injected on :root by
+ * app/layout.js from site.config.js. The fallbacks below only matter if
+ * that <style> tag is ever removed — they keep the site readable.
+ */
+:root {
+  --primo-primary: #39261c;
+  --primo-secondary: #f89e1f;
+  --primo-accent: #f01827;
+  --primo-cream: #f7f1e1;
+  --primo-gray: #f5f5f5;
+  --primo-text: #484848;
+  --primo-on-primary: #ffffff;
+  --primo-on-secondary: #111111;
+  --primo-on-accent: #ffffff;
+  --font-heading: "Barlow Condensed", Impact, "Arial Narrow Bold", sans-serif;
+  --font-body: "Roboto", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--primo-text);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #000;
+}
+
+/* Primary CTA: secondary-colour bg, readable text -> accent on hover */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-primo-secondary px-8 py-4 text-base font-bold text-primo-on-secondary transition-colors duration-200 hover:bg-primo-accent hover:text-primo-on-accent;
+}
+
+/* Secondary CTA: main-colour bg, secondary-colour text -> accent on hover */
+.btn-dark {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-primo-primary px-8 py-4 text-base font-bold text-primo-secondary transition-colors duration-200 hover:bg-primo-accent hover:text-primo-on-accent;
+}
+
+.eyebrow {
+  @apply mb-3 inline-flex items-center gap-2 text-base font-bold uppercase tracking-widest text-primo-secondary;
+}
+
+.section {
+  @apply mx-auto w-full max-w-7xl px-5 py-16 md:py-24;
+}
+
+/*
+ * Reproduces the original ElementsKit "gradient-active" hover sweep on
+ * the menu item and feature cards: a tinted panel slides in behind the
+ * content on hover, sliding in from the left (menu rows) or from the
+ * top (feature icon boxes).
+ */
+.hover-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.hover-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--primo-secondary);
+  transition: transform 0.6s ease;
+}
+
+.hover-card-from-left::before {
+  transform: translateX(-101%);
+}
+.hover-card-from-left:hover::before {
+  transform: translateX(0);
+}
+
+.hover-card-from-top::before {
+  transform: translateY(-101%);
+}
+.hover-card-from-top:hover::before {
+  transform: translateY(0);
+}
+
+.hover-card:hover h3,
+.hover-card:hover p,
+.hover-card:hover .price {
+  color: var(--primo-on-secondary);
+}
+
+/* /admin-edited pages: the mobile menu is toggled by sb-effects.js. */
+nav#sb-mobile-nav.sb-open {
+  display: block;
+}

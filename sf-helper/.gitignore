@@ -1,0 +1,5 @@
+config.json
+helper.log
+helper.old.log
+helper.lock
+crawls/

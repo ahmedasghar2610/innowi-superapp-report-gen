@@ -1,0 +1,13 @@
+# Per-app ignores live in api/, web/ and site/. These are global safety nets.
+.DS_Store
+node_modules/
+.env
+.env.local
+.env.*.local
+__pycache__/
+.vercel/
+# Logs from start-local.ps1 (local development only).
+.local-logs/
+
+venv/
+api/venv/

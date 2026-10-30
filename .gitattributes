@@ -1,0 +1,15 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.zip binary
+
+# The crawler helper runs on Windows: keep its batch files CRLF.
+sf-helper/*.bat text eol=crlf

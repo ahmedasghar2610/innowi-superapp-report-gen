@@ -1,0 +1,522 @@
+@import "tailwindcss";
+
+/* =============================================================================
+   Innowi Marketing Operations Portal — design tokens
+   Sourced 1:1 from the Innowi Brand Book (Signal Blue + Pickled Bluewood on
+   the shadcn/ui token system, Inter type scale, Lucide iconography).
+
+   Ramps (Tailwind/shadcn 50–950 convention):
+     Signal Blue      50 #F4F7FF · 100 #EAF0FE · 200 #CCDBFD · 300 #A6BFFB
+                      400 #7098F8 · 500 #2C67F5 (brand) · 600 #275BD8
+                      700 #214CB5 · 800 #1A3E93 · 900 #153176 · 950 #0F2456
+     Pickled Bluewood 50 #F1F2F4 · 100 #E4E6EA · 200 #C8CCD3 · 300 #A9B0BA
+                      400 #8C95A3 · 500 #707B8C · 600 #515E74 · 700 #32425B
+                      (brand) · 800 #283549 · 900 #202A3A · 950 #18202C
+
+   Semantic tokens live as CSS variables on :root (+ .dark); @theme maps them
+   to Tailwind utilities (`bg-primary`, `text-muted-foreground`, `bg-sidebar`,
+   `text-success-text`, …).
+   ============================================================================= */
+
+/* Class-based dark mode (toggled on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* type — Inter is loaded via <link> in the root layout */
+  --font-inter: "Inter";
+
+  /* ---- neutrals & surfaces (Brand Book "Neutrals & surfaces") ---- */
+  --background: #ffffff;
+  --foreground: #32425b; /* Pickled Bluewood 700 — primary body text */
+  --card: #ffffff;
+  --card-foreground: #32425b;
+  --popover: #ffffff;
+  --popover-foreground: #32425b;
+
+  --muted: #f5f6f8;
+  --muted-foreground: #6b7280;
+
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #2c67f5; /* focus ring — Signal Blue */
+
+  /* ---- primary — Signal Blue (step 500) ---- */
+  --primary: #2c67f5;
+  --primary-foreground: #ffffff;
+  --primary-hover: #275bd8; /* 600 */
+  --primary-active: #214cb5; /* 700 */
+  --primary-subtle: #eaf0fe; /* 100 */
+  --primary-subtle-foreground: #214cb5; /* 700 — text-safe on 100 */
+  --primary-border: #a6bffb; /* 300 */
+  --primary-disabled: #a6bffb;
+  --primary-disabled-foreground: #ffffff;
+
+  /* ---- secondary — light neutral button (Brand Book --secondary) ---- */
+  --secondary: #f1f3f6;
+  --secondary-foreground: #32425b;
+
+  /* ---- accent — subtle hover / active background (Signal Blue 100) ---- */
+  --accent: #eaf0fe;
+  --accent-foreground: #32425b;
+  --accent-hover: #ccdbfd; /* 200 */
+  --accent-active: #a6bffb; /* 300 */
+
+  /* ---- state colours: subtle / solid / text ---- */
+  --success: #059669;
+  --success-foreground: #ffffff;
+  --success-subtle: #e1f2ed;
+  --success-subtle-foreground: #046c4c;
+  --success-border: #b9e2d3;
+
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --warning-soft: #faefe1;
+  --warning-text: #9c5604;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --destructive-subtle: #fbe5e5;
+  --text-destructive: #9e1b1b;
+
+  --data-issue: #6b6b8d;
+  --data-issue-foreground: #ffffff;
+  --dataq-soft: #ededf1;
+  --dataq-text: #4d4d66;
+
+  /* ---- charts — Signal Blue is the "current" series; Bluewood for the rest ---- */
+  --chart-1: #2c67f5;
+  --chart-2: #8c95a3;
+  --chart-3: #32425b;
+  --chart-4: #7098f8;
+  --chart-5: #c8ccd3;
+  /* Categorical series (dataviz reference palette, fixed order, validated for
+     colour-blind separation): used when several metrics share one chart. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+
+  /* ---- app shell / sidebar — white shell, Signal Blue active state
+     (design review: "white with primary blue active state") ---- */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #32425b; /* nav text — Pickled Bluewood */
+  --sidebar-muted-foreground: #6b7280; /* secondary nav text & idle icons */
+  --sidebar-primary: #2c67f5; /* active rail / icon — Signal Blue 500 */
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-soft: #2c67f5; /* active icon on an open group */
+  --sidebar-accent: #eaf0fe; /* active item background — Signal Blue 100 */
+  --sidebar-accent-foreground: #214cb5; /* active item text — Signal Blue 700 */
+  --sidebar-hover: #f1f3f6; /* hover — Bluewood 50 neutral */
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #2c67f5;
+
+  /* ---- radii ---- */
+  --radius: 8px;
+  --radius-xs: 2px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+}
+
+.dark {
+  --background: #0b1220;
+  --foreground: #e6eaf2;
+  --card: #131c2e;
+  --card-foreground: #e6eaf2;
+  --popover: #18233a;
+  --popover-foreground: #e6eaf2;
+
+  --muted: #18223a;
+  --muted-foreground: #8fa0bc;
+
+  --border: #263349;
+  --input: #263349;
+  --ring: #4c82ff;
+
+  --primary: #4c82ff;
+  --primary-foreground: #0b1220;
+  --primary-hover: #7098f8;
+  --primary-active: #a6bffb;
+  --primary-subtle: #22345c;
+  --primary-subtle-foreground: #dce6ff;
+  --primary-border: #214cb5;
+  --primary-disabled: #1a3e93;
+  --primary-disabled-foreground: #7098f8;
+
+  --secondary: #22303f;
+  --secondary-foreground: #e6eaf2;
+
+  --accent: #22345c;
+  --accent-foreground: #dce6ff;
+  --accent-hover: #1a3e93;
+  --accent-active: #214cb5;
+
+  --success: #34d399;
+  --success-foreground: #05281c;
+  --success-subtle: #12352a;
+  --success-subtle-foreground: #a7f3d0;
+  --success-border: #1d5a44;
+
+  --warning: #f59e0b;
+  --warning-foreground: #2a1a05;
+  --warning-soft: #2e2213;
+  --warning-text: #fcd34d;
+
+  --destructive: #f87171;
+  --destructive-foreground: #2b0d0d;
+  --destructive-subtle: #3a1b1b;
+  --text-destructive: #fca5a5;
+
+  --data-issue: #8f8fb0;
+  --data-issue-foreground: #1c1c2a;
+  --dataq-soft: #23233a;
+  --dataq-text: #c4c4dc;
+
+  --chart-1: #4c82ff;
+  --chart-2: #8c95a3;
+  --chart-3: #a9b0ba;
+  --chart-4: #7098f8;
+  --chart-5: #515e74;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+
+  --sidebar: #131c2e; /* card surface */
+  --sidebar-foreground: #e6eaf2;
+  --sidebar-muted-foreground: #8fa0bc;
+  --sidebar-primary: #4c82ff;
+  --sidebar-primary-foreground: #0b1220;
+  --sidebar-primary-soft: #4c82ff;
+  --sidebar-accent: #22345c;
+  --sidebar-accent-foreground: #dce6ff;
+  --sidebar-hover: #18223a;
+  --sidebar-border: #263349;
+  --sidebar-ring: #4c82ff;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Brand Book type scale (px / line-height). Tailwind's defaults already
+     match Caption 12/16, Body 14/20, Body-large 16/24, H4 18/28, H3 20/28,
+     H2 24/32; the two that differ are pinned here. */
+  --text-3xl: 28px; /* Heading 1 · KPI value */
+  --text-3xl--line-height: 36px;
+  --text-4xl: 36px; /* Display — marketing / cover only */
+  --text-4xl--line-height: 44px;
+  --text-table: 13px; /* Small / Table — dense tables */
+  --text-table--line-height: 20px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+  --color-primary-border: var(--primary-border);
+  --color-primary-disabled: var(--primary-disabled);
+  --color-primary-disabled-foreground: var(--primary-disabled-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-subtle: var(--destructive-subtle);
+  --color-text-destructive: var(--text-destructive);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary-soft: var(--sidebar-primary-soft);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-subtle-foreground: var(--success-subtle-foreground);
+  --color-success-border: var(--success-border);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-text: var(--warning-text);
+
+  --color-data-issue: var(--data-issue);
+  --color-data-issue-foreground: var(--data-issue-foreground);
+  --color-dataq-soft: var(--dataq-soft);
+  --color-dataq-text: var(--dataq-text);
+
+  --radius-card: var(--radius);
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+}
+
+/* base */
+/* Default border colour. Inside `@layer base` so that border utilities
+   (`border-primary`, `aria-[invalid=true]:border-destructive`, …) still win —
+   unlayered CSS beats every layered utility regardless of specificity. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  /* Lucide icons: outline, currentColor, 24px grid. Consumers set the size
+     (16 inline & dense tables · 20 default UI · 24 section headers) and the
+     colour (muted-foreground by default, Signal Blue when active; status
+     icons take their status colour only). */
+  svg.lucide {
+    flex-shrink: 0;
+  }
+}
+
+/* Chevron for the design-system <Select> (components/ui/select.tsx). In the
+   components layer so utilities such as `bg-card` (a colour) still apply. */
+@layer components {
+  .ds-select-chevron {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' stroke='%236c7583' fill='none' stroke-width='1.5'/></svg>");
+    background-position: right 10px center;
+    background-repeat: no-repeat;
+  }
+}
+
+html {
+  height: 100%;
+}
+body {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  /* Body — 14/20 Regular */
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* focus ring — Signal Blue, offset with the page colour */
+:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--card),
+    0 0 0 4px var(--ring);
+  border-radius: 5px;
+}
+
+/* 6px scrollbar. */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 20px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Sales overview motion (features/sales/components/insights) ----------
+ * Entrances only: cards rise in, bars grow from their baseline, numbers count
+ * up. Only the small "live data" dot loops. All of it is off for people who
+ * ask their device for reduced motion. */
+@keyframes sa-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sa-grow-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes sa-grow-y {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes sa-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+.sa-rise   { animation: sa-rise 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.sa-grow-x { transform-origin: left center;   animation: sa-grow-x 760ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.sa-grow-y { transform-origin: center bottom; transform-box: fill-box; animation: sa-grow-y 760ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.sa-live-dot { animation: sa-pulse-dot 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sa-rise, .sa-grow-x, .sa-grow-y, .sa-live-dot { animation: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   AI assistant (features/assistant) — the orb, streaming caret, shimmer,
+   chart draw-in. All motion stops under prefers-reduced-motion.
+   ------------------------------------------------------------------------- */
+.assistant-orb-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 32%),
+    conic-gradient(from 0deg, #2c67f5, #7098f8, #a78bfa, #22d3ee, #2c67f5);
+  box-shadow:
+    0 0 0 1px rgba(44, 103, 245, 0.12),
+    0 8px 24px -6px rgba(44, 103, 245, 0.55),
+    inset 0 -6px 14px rgba(21, 49, 118, 0.35);
+  animation: assistant-spin 9s linear infinite, assistant-breathe 4.5s ease-in-out infinite;
+}
+.assistant-orb-shine {
+  position: absolute;
+  inset: 12%;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 60%);
+  filter: blur(1px);
+  pointer-events: none;
+}
+.assistant-orb--thinking .assistant-orb-core { animation: assistant-spin 1.6s linear infinite, assistant-breathe 1.6s ease-in-out infinite; }
+.assistant-orb--speaking .assistant-orb-core { animation: assistant-spin 5s linear infinite, assistant-talk 0.5s ease-in-out infinite alternate; }
+.assistant-orb--listening .assistant-orb-core { animation: assistant-spin 3s linear infinite, assistant-breathe 1.2s ease-in-out infinite; }
+.assistant-orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid rgba(44, 103, 245, 0.45);
+  animation: assistant-ripple 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+}
+@keyframes assistant-spin { to { transform: rotate(360deg); } }
+@keyframes assistant-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }
+@keyframes assistant-talk { from { scale: 0.96; } to { scale: 1.1; } }
+@keyframes assistant-ripple { from { opacity: 0.9; transform: scale(1); } to { opacity: 0; transform: scale(1.9); } }
+
+/* Big soft glow behind the empty-state greeting. */
+.assistant-glow {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(44, 103, 245, 0.16), transparent 70%),
+    radial-gradient(40% 35% at 80% 10%, rgba(167, 139, 250, 0.12), transparent 70%),
+    radial-gradient(40% 35% at 20% 15%, rgba(34, 211, 238, 0.1), transparent 70%);
+}
+.assistant-gradient-text {
+  background: linear-gradient(90deg, #2c67f5, #7c5cf6 45%, #0ea5e9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.dark .assistant-gradient-text { background-image: linear-gradient(90deg, #7098f8, #a78bfa 45%, #38bdf8); }
+
+/* Status line while a lookup runs: a light sweep across the text. */
+.assistant-shimmer {
+  background: linear-gradient(90deg, var(--muted-foreground) 0%, var(--muted-foreground) 40%, var(--foreground) 50%, var(--muted-foreground) 60%, var(--muted-foreground) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: assistant-sweep 1.6s linear infinite;
+}
+@keyframes assistant-sweep { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* Blinking caret at the end of a streaming answer. */
+.assistant-caret::after,
+.assistant-caret-host > p:last-child::after,
+.assistant-caret-host > :is(ul, ol):last-child > li:last-child::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  border-radius: 2px;
+  background: var(--primary);
+  animation: assistant-blink 1s steps(2, start) infinite;
+}
+@keyframes assistant-blink { to { visibility: hidden; } }
+
+/* Line charts draw themselves in; donut slices fade in. */
+.assistant-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: assistant-dash 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s forwards; }
+@keyframes assistant-dash { to { stroke-dashoffset: 0; } }
+.assistant-donut { animation: assistant-fade 600ms ease-out both; }
+@keyframes assistant-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Mic level bars while listening. */
+.assistant-eq span { animation: assistant-eq 0.9s ease-in-out infinite; transform-origin: bottom; }
+.assistant-eq span:nth-child(2) { animation-delay: 0.15s; }
+.assistant-eq span:nth-child(3) { animation-delay: 0.3s; }
+.assistant-eq span:nth-child(4) { animation-delay: 0.45s; }
+@keyframes assistant-eq { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-orb-core, .assistant-orb-ring, .assistant-shimmer, .assistant-caret::after, .assistant-caret-host > p:last-child::after, .assistant-caret-host > :is(ul, ol):last-child > li:last-child::after, .assistant-donut, .assistant-eq span { animation: none; }
+  .assistant-draw { animation: none; stroke-dashoffset: 0; }
+}
+
+/* The question box shows focus on its whole card (focus-within), not a ring on the bare textarea. */
+#assistant-input:focus-visible { box-shadow: none; }
+/* Printing / "Save as PDF": the app shell is a fixed-height screen with its own
+   scroll area, so let the whole document flow onto as many pages as it needs. */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  /* Developer-only floating buttons (React Query devtools, Next.js indicator) never print. */
+  .tsqd-parent-container,
+  nextjs-portal {
+    display: none !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  section,
+  table,
+  tr {
+    break-inside: avoid-page;
+  }
+}
