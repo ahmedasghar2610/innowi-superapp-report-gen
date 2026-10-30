@@ -34,6 +34,9 @@ GENERATING, DRAFT, EDITED, APPROVED, SENT, FAILED, DELETED = "generating", "draf
 EDITABLE = (DRAFT, EDITED)
 REGENERABLE = (DRAFT, EDITED, FAILED, DELETED)
 DELETABLE = (DRAFT, EDITED, APPROVED, FAILED)
+# A file is only ever made of a version that has been approved — and of the one
+# that was sent, so the merchant's copy can be downloaded again (MFR10).
+EXPORTABLE = (APPROVED, SENT)
 APPROVER_EXEMPT = (Role.ADMIN.value, Role.SUPER_ADMIN.value)
 EDITABLE_KEYS = ("summary", "sectionNotes", "recommendations", "bottomLine")
 
@@ -80,6 +83,16 @@ def check_send(status: str, approved_at: Optional[dt.datetime], sent_at: Optiona
     if status == FAILED and approved_at:
         return  # a failed send may be retried
     raise ReportError("Only an approved report can be sent.")
+
+
+def check_export(status: str) -> None:
+    """A draft is a working copy, not a document. Only the frozen, approved
+    snapshot (and the version that went out) may become a PDF or a DOCX."""
+    if status in EXPORTABLE:
+        return
+    if status == DELETED:
+        raise ReportError("This report is deleted; there is nothing to export.")
+    raise ReportError("Only an approved report can be exported. Approve this version first.")
 
 
 def check_recipients(requested: list[str], allowed: list[str]) -> list[str]:
@@ -222,6 +235,27 @@ async def approve(db: AsyncSession, report: ReportGenReport, user_id: str, user_
     await _audit(db, report, "approve", user_id)
     await db.flush()
     return report
+
+
+async def export(db: AsyncSession, report: ReportGenReport, kind: str) -> tuple[str, bytes]:
+    """The approved snapshot as a file: (filename, bytes). Writes nothing.
+
+    The state check comes first, then the snapshot, then the renderer — the same
+    order every function above uses. The exports module runs the whitelist scan
+    on the payload before it renders a single line.
+    """
+    from app.modules.report_gen import exports
+
+    if kind not in exports.KINDS:
+        raise ReportError(f"Unknown export format {kind!r}. Available: {', '.join(exports.KINDS)}.")
+    check_export(report.status)
+    snap = await snapshot_of(db, report)
+    if snap is None:
+        raise ReportError("This report has no snapshot to export.")
+    payload = snap.payload or {}
+    # A WhitelistError here is deliberately not caught: a blocked field must stop
+    # the download, never be hidden from the reviewer.
+    return exports.filename(payload, kind), exports.render(payload, kind)
 
 
 async def soft_delete(db: AsyncSession, report: ReportGenReport, user_id: str, note: Optional[str] = None) -> ReportGenReport:

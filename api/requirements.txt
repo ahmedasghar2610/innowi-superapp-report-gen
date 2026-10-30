@@ -15,4 +15,5 @@ openpyxl==3.1.5
 cryptography>=42.0.0  # Fernet encryption of stored credentials (app/common/security/crypto.py)
 httpx==0.28.1  # Salesforce, Fathom, Google APIs (salesforce/client.py, ops/fathom.py, gbp, ads, seo)
 reportlab==4.4.4  # Quote proposal PDFs (app/modules/quotes/pdf.py)
+python-docx==1.1.2  # Merchant report DOCX exports (app/modules/report_gen/exports/docx.py)
 tzdata>=2024.1  # zoneinfo data for the SLA clock on systems without a tz database

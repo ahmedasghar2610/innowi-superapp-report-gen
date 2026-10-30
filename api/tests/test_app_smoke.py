@@ -265,6 +265,8 @@ EXPECTED_ENDPOINTS = [
     ("GET", "/api/v1/report-gen/reports/{report_id}"), ("PATCH", "/api/v1/report-gen/reports/{report_id}/text"),
     ("POST", "/api/v1/report-gen/reports/{report_id}/approve"), ("DELETE", "/api/v1/report-gen/reports/{report_id}"),
     ("POST", "/api/v1/report-gen/reports/{report_id}/send"), ("GET", "/api/v1/report-gen/reports/{report_id}/preview"),
+    ("GET", "/api/v1/report-gen/reports/{report_id}/export.pdf"),
+    ("GET", "/api/v1/report-gen/reports/{report_id}/export.docx"),
 ]
 
 
@@ -326,7 +328,7 @@ def test_all_reference_endpoints_present():
     # + 9 Merchant Reports (status, queue, generate, read, text, approve, delete, send, preview; 2026-10-30) = 429.
     # (/integrations/teams/* is for the Power Automate flow, left out of the OpenAPI document.)
     # /jobs/{job} and the OAuth callbacks are deliberately left out of the OpenAPI document.
-    assert len(set(EXPECTED_ENDPOINTS)) == len(EXPECTED_ENDPOINTS) == 429
+    assert len(set(EXPECTED_ENDPOINTS)) == len(EXPECTED_ENDPOINTS) == 431
 
     # And nothing undocumented crept in beyond the reference surface.
     extra = sorted(r for r in registered if r not in set(EXPECTED_ENDPOINTS))

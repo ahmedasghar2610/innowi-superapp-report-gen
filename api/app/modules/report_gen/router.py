@@ -10,6 +10,8 @@ report_gen.view AND the REPORT_GEN_ENABLED flag (404 while off).
     DELETE /report-gen/reports/{id}                      soft delete (manage)
     POST   /report-gen/reports/{id}/send                 send the approved report (approve); dry-run by default
     GET    /report-gen/reports/{id}/preview              the merchant-facing payload (no recipients, no reviewer names)
+    GET    /report-gen/reports/{id}/export.pdf           the approved snapshot as a PDF download
+    GET    /report-gen/reports/{id}/export.docx          the approved snapshot as a Word download
 """
 from __future__ import annotations
 
@@ -17,7 +19,7 @@ import datetime as dt
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,7 +34,7 @@ from app.models.enums import MerchantServiceStatus, MerchantStatus
 from app.models.profiling import Merchant, MerchantService
 from app.models.report_gen import ReportGenReport
 from app.models.seo import SeoSite
-from app.modules.report_gen import flag, sender, service
+from app.modules.report_gen import exports, flag, sender, service
 from app.modules.report_gen.periods import Period, parse_month
 
 logger = logging.getLogger("ReportGen")
@@ -268,6 +270,28 @@ async def send_report(report_id: str, dto: SendInput, request: Request, db: Asyn
     await service.record_send(db, r, mode=result.mode, status=result.status, recipients=result.recipients, user_id=user.id)
     await db.commit()
     return {**await _report_dto(db, r, user), "send": {"mode": result.mode, "status": result.status, "recipients": result.recipients, "subject": result.subject}}
+
+
+async def _export(report_id: str, kind: str, db: AsyncSession) -> Response:
+    """The approved snapshot as a download. Same read permission as the preview:
+    it is the same merchant-facing content, in a file instead of JSON."""
+    r = await _report(db, report_id)
+    try:
+        name, data = await service.export(db, r, kind)
+    except service.ReportError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return Response(content=data, media_type=exports.MEDIA_TYPES[kind],
+                    headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "private, no-store"})
+
+
+@router.get("/reports/{report_id}/export.pdf")
+async def export_pdf(report_id: str, db: AsyncSession = Depends(get_db)):
+    return await _export(report_id, "pdf", db)
+
+
+@router.get("/reports/{report_id}/export.docx")
+async def export_docx(report_id: str, db: AsyncSession = Depends(get_db)):
+    return await _export(report_id, "docx", db)
 
 
 @router.get("/reports/{report_id}/preview")
