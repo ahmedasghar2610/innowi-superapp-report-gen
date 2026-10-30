@@ -4,11 +4,11 @@ from __future__ import annotations
 import pytest
 
 from app.modules.report_gen import whitelist
-from app.modules.report_gen.assemble import REASONS, ads, blogs, seo, stub
+from app.modules.report_gen.assemble import REASONS, ads, blogs, seo, stub, website
 
 
 def test_every_assembler_reads_only_whitelisted_columns():
-    for mod in (ads, seo, blogs):
+    for mod in (ads, seo, blogs, website):
         assert whitelist.check_reads(mod.READS) == [], mod.__name__
 
 

@@ -10,7 +10,7 @@ import pytest
 
 from app.modules.ads import calc
 from app.modules.report_gen import narrative, periods, whitelist
-from app.modules.report_gen.assemble import SECTION_ORDER, Ctx, ads, blogs, compose, find_metric, package_switch, seo, section, stub
+from app.modules.report_gen.assemble import SECTION_ORDER, Ctx, ads, blogs, compose, find_metric, package_switch, seo, section, stub, website
 
 FIX = json.loads((Path(__file__).parent / "fixtures" / "report_gen" / "sample_month.json").read_text(encoding="utf-8"))
 SEPT = periods.month_period(2026, 9)
@@ -128,6 +128,63 @@ def test_blogs_section_counts_posts_published_in_month_and_their_clicks():
     assert s["tables"]["totals"]["planned"] is None and s["dataThrough"] == "2026-09-27"
     empty = blogs.compute([], {}, {}, SEPT.start, SEPT.end, None, None)
     assert all(x["reason"] == "no_blog_posts" for x in empty["metrics"])
+
+
+# --------------------------------------------------------------- website ----
+# WEB01 only. `sessions` on marketing.seo_ga4_daily is all-channel (seo/google.py's
+# parse_ga4_daily sums every sessionDefaultChannelGroup row), which is why it differs
+# from the Search section's organic clicks.
+LINKED = [{"id": "s1", "name": "Gaters", "domain": "gaters.example", "ga4Property": "properties/123",
+           "lastGa4Date": dt.date(2026, 10, 14)}]
+UNLINKED = [{"id": "s1", "name": "Gaters", "domain": "gaters.example", "ga4Property": None, "lastGa4Date": None}]
+
+
+def test_website_section_reports_visits_with_the_change_on_the_prior_month():
+    s = website.compute(LINKED, 4200, 3500, data_through=dt.date(2026, 9, 30))
+    m = {x["id"]: x for x in s["metrics"]}
+    assert s["included"] and m["WEB01"]["value"] == 4200 and m["WEB01"]["prev"] == 3500
+    assert m["WEB01"]["change"] == 0.2 and m["WEB01"]["unit"] == "count"
+    assert m["WEB01"]["reason"] is None and s["dataThrough"] == "2026-09-30"
+    assert s["sources"] == ["Google Analytics · gaters.example"]
+    assert "every visit to the site" in s["caption"]
+    # WEB01 is all traffic, so it is not the Search section's click count
+    assert m["WEB01"]["value"] != find_metric(_seo_section(), "SEO01")["value"]
+    assert whitelist.scan(s) == []
+
+
+def test_website_section_without_a_prior_month_shows_no_change():
+    m = {x["id"]: x for x in website.compute(LINKED, 4200, None)["metrics"]}
+    assert m["WEB01"]["value"] == 4200 and m["WEB01"]["prev"] is None and m["WEB01"]["change"] is None
+
+
+def test_website_visits_of_zero_is_a_figure_not_a_gap():
+    # the sync stores a 0 row for every day GA4 reports no visits, so 0 is measured
+    m = {x["id"]: x for x in website.compute(LINKED, 0, 120)["metrics"]}
+    assert m["WEB01"]["value"] == 0 and m["WEB01"]["reason"] is None
+    assert m["WEB01"]["change"] == -1.0
+
+
+def test_website_section_says_not_supplied_when_ga4_stored_no_day():
+    s = website.compute(LINKED, None, None)
+    m = {x["id"]: x for x in s["metrics"]}
+    assert m["WEB01"]["value"] is None and m["WEB01"]["reason"] == "no_data_in_period"
+    assert m["WEB01"]["reasonText"] == "No data was recorded for this month."
+    assert {"id": "WEB01", "reason": "no_data_in_period", "text": "No data was recorded for this month."} in s["missing"]
+
+
+def test_website_section_is_unchanged_when_no_analytics_property_is_linked():
+    # identical to what the stub produced before this adapter existed
+    assert website.compute(UNLINKED, None, None) == stub.build("website", "website_analytics_not_connected")
+    assert website.compute([], None, None) == stub.build("website", "website_analytics_not_connected")
+
+
+def test_the_other_website_figures_keep_their_heading_and_a_reason():
+    s = website.compute(LINKED, 4200, 3500)
+    ids = [m["id"] for m in s["metrics"]]
+    assert ids == [i for i, _, _ in stub.P1["website"]]  # every P1 figure of the segment, in order
+    others = [m for m in s["metrics"] if m["id"] != "WEB01"]
+    assert others and all(m["value"] is None and m["reason"] == "website_metric_not_collected" for m in others)
+    assert all(m["reasonText"].startswith("Only website visits are collected today") for m in others)
 
 
 # --------------------------------------------------------------- compose ----

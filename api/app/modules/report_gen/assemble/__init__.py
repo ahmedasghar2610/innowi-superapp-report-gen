@@ -63,6 +63,7 @@ REASONS: dict[str, str] = {
     "no_blog_posts": "No blog posts were found on this website.",
     "blog_plan_not_recorded": "The number of planned posts is not recorded.",
     "website_analytics_not_connected": "Website analytics are not connected for this merchant.",
+    "website_metric_not_collected": "Only website visits are collected today; this figure needs order and channel tracking on the site.",
     "gbp_pending_google": "Business Profile data arrives once Google approves API access.",
     "module_not_connected": "This module is not connected to the Super App yet.",
     "reviews_module_not_connected": "The reviews module is not connected to the Super App yet.",
@@ -235,7 +236,7 @@ def compose(ctx: Ctx, sections: dict[str, dict], *, template: str = "monthly", g
 
 async def build_payload(db: AsyncSession, merchant_id: str, period: Period, *, template: str = "monthly",
                         today: Optional[dt.date] = None) -> dict:
-    from app.modules.report_gen.assemble import ads, blogs, seo, stub
+    from app.modules.report_gen.assemble import ads, blogs, seo, stub, website
 
     ctx = await load_ctx(db, merchant_id, period, today)
     included = package_switch(ctx)
@@ -243,7 +244,7 @@ async def build_payload(db: AsyncSession, merchant_id: str, period: Period, *, t
     sections["sales"] = stub.build("sales", "sales_feed_not_connected", included=included["sales"])
     sections["search"] = await seo.build(db, ctx) if included["search"] else section("search", included=False)
     sections["blogs"] = await blogs.build(db, ctx) if included["blogs"] else section("blogs", included=False)
-    sections["website"] = stub.build("website", "website_analytics_not_connected", included=included["website"])
+    sections["website"] = await website.build(db, ctx) if included["website"] else section("website", included=False)
     sections["gbp"] = stub.build("gbp", "gbp_pending_google", included=included["gbp"])
     sections["ads"] = await ads.build(db, ctx) if included["ads"] else section("ads", included=False)
     sections["email_sms"] = stub.build("email_sms", "module_not_connected", included=included["email_sms"])
