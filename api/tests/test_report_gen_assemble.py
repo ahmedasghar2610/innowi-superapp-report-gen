@@ -10,7 +10,8 @@ import pytest
 
 from app.modules.ads import calc
 from app.modules.report_gen import narrative, periods, whitelist
-from app.modules.report_gen.assemble import SECTION_ORDER, Ctx, ads, blogs, compose, find_metric, package_switch, seo, section, stub, website
+from app.modules.report_gen.assemble import (SECTION_ORDER, Ctx, ads, blogs, compose, find_metric, package_switch, seo, section,
+                                             stub, through_month, website)
 
 FIX = json.loads((Path(__file__).parent / "fixtures" / "report_gen" / "sample_month.json").read_text(encoding="utf-8"))
 SEPT = periods.month_period(2026, 9)
@@ -37,6 +38,34 @@ def test_calendar_month_maths():
     assert periods.yoy_available(dt.date(2025, 8, 15), SEPT) and not periods.yoy_available(dt.date(2025, 10, 1), SEPT)
     assert periods.change(120, 100) == 0.2 and periods.change(80, 100) == -0.2
     assert periods.change(5, 0) is None and periods.change(None, 1) is None
+
+
+# ------------------------------------------------- "data through" clamping ----
+def test_data_through_never_runs_past_the_month_being_reported():
+    """A source's last_*_date keeps moving as its sync runs. An August report that
+    says "data through 27 October" tells the merchant the wrong thing, so the
+    month end is the ceiling (confirmed against real dev data, 2026-10-31)."""
+    aug = periods.month_period(2026, 8)
+    assert through_month(dt.date(2026, 10, 27), aug.end) == dt.date(2026, 8, 31)
+    assert through_month(dt.date(2026, 8, 14), aug.end) == dt.date(2026, 8, 14)  # a sync that stopped mid-month
+    assert through_month(dt.date(2026, 8, 31), aug.end) == dt.date(2026, 8, 31)
+    assert through_month(None, aug.end) is None
+    assert through_month(dt.date(2026, 10, 27), None) == dt.date(2026, 10, 27)  # no month given, no clamp
+
+
+def test_search_and_ads_and_website_all_clamp_data_through_to_the_month():
+    aug = periods.month_period(2026, 8)
+    s = FIX["seo"]
+    late = [{**x, "lastGscDate": dt.date(2026, 10, 27)} for x in s["sites"]]
+    sec = seo.compute(late, s["cur"], s["prev"], s["queries"], s["prevQueries"], s["pages"], s["devicesCur"], s["devicesPrev"],
+                      s["fixed"], s["fixedPrev"], s["openCount"], city="Concord", merchant_name="Gaters Restaurant",
+                      period_end=aug.end)
+    assert sec["dataThrough"] == "2026-08-31"
+    a = FIX["ads"]
+    accounts = [{**x, "lastMetricsDate": dt.date(2026, 10, 29)} for x in a["accounts"]]
+    sec = ads.compute(accounts, a["campaigns"], _totals(a["cur"]), _totals(a["prev"]), None, period_end=aug.end)
+    assert sec["dataThrough"] == "2026-08-31"
+    assert website.compute(LINKED, 2288, 2069, data_through=through_month(LINKED[0]["lastGa4Date"], aug.end))["dataThrough"] == "2026-08-31"
 
 
 # ------------------------------------------------------------------- ads ----

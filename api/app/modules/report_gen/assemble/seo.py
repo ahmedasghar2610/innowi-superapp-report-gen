@@ -14,7 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.seo import SeoFinding, SeoGscPage, SeoGscQuery, SeoGscSplit, SeoSite
-from app.modules.report_gen.assemble import Ctx, metric, not_supplied, section
+from app.modules.report_gen.assemble import Ctx, metric, not_supplied, section, through_month
 from app.modules.seo import data as seo_data
 from app.modules.seo import report_v2
 
@@ -54,7 +54,7 @@ def is_local(query: str, city: Optional[str]) -> bool:
 
 def compute(sites: list[dict], cur: dict, prev: dict, queries: list[dict], prev_queries: list[dict], pages: list[dict],
             devices_cur: list[dict], devices_prev: list[dict], fixed: int, fixed_prev: int, open_count: int,
-            city: Optional[str], merchant_name: str) -> dict:
+            city: Optional[str], merchant_name: str, *, period_end: Optional[dt.date] = None) -> dict:
     """Pure. sites: [{id, name, domain, gscProperty, lastGscDate}]; cur / prev: summed windows
     {clicks, impressions, position}; queries / pages: this month's rows; devices: split rows."""
     if not sites:
@@ -101,7 +101,8 @@ def compute(sites: list[dict], cur: dict, prev: dict, queries: list[dict], prev_
                      "trackedClicks": split["trackedClicks"], "trackedShareOfClicks": _r(tracked_share, 4)} if split else None),
         "issues": {"openCount": open_count, "fixedThisMonth": fixed},
     }
-    through = max((s["lastGscDate"] for s in sites if s.get("lastGscDate")), default=None)
+    # Capped at the month end: the sync keeps running after the month closes.
+    through = through_month(max((s["lastGscDate"] for s in sites if s.get("lastGscDate")), default=None), period_end)
     note = None
     if split:
         note = f"Branded share covers tracked search terms ({split['trackedClicks']} of {cur['clicks']} clicks)."
@@ -159,4 +160,4 @@ async def build(db: AsyncSession, ctx: Ctx) -> dict:
     open_count = int((await db.execute(select(func.count()).select_from(SeoFinding).where(
         SeoFinding.site_id.in_(site_ids), SeoFinding.state != "closed"))).scalar_one())
     return compute(sites, cur, prev, queries, prev_queries, pages, await devices(p.start), await devices(q.start),
-                   fixed, fixed_prev, open_count, ctx.merchant.get("city"), ctx.merchant["name"])
+                   fixed, fixed_prev, open_count, ctx.merchant.get("city"), ctx.merchant["name"], period_end=p.end)

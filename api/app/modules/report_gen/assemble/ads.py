@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ads import AdsAccount, AdsCampaign
 from app.modules.ads import calc
 from app.modules.ads import reports as ads_reports
-from app.modules.report_gen.assemble import Ctx, metric, not_supplied, section
+from app.modules.report_gen.assemble import Ctx, metric, not_supplied, section, through_month
 
 READS = {
     "marketing.ads_account": ("id", "name", "merchant_id", "state", "source", "ticket_total_sales", "ticket_order_count", "ticket_updated_at", "last_metrics_date"),
@@ -39,7 +39,7 @@ def _n(v: float) -> float:
 
 
 def compute(accounts: list[dict], campaigns: list[dict], cur: dict[str, calc.Totals], prev: dict[str, calc.Totals],
-            budget: Optional[float]) -> dict:
+            budget: Optional[float], *, period_end: Optional[dt.date] = None) -> dict:
     """Pure. accounts: [{id, name, ticketSales, ticketOrders, ticketUpdatedAt, lastMetricsDate}];
     campaigns: [{id, accountId, name, status}]; cur / prev: campaign id → Totals."""
     if not accounts:
@@ -114,7 +114,8 @@ def compute(accounts: list[dict], campaigns: list[dict], cur: dict[str, calc.Tot
                     {"action": "Menu views", "value": _n(c.menu), "prev": _n(p.menu)}],
         "tickets": tickets,
     }
-    through = max((a["lastMetricsDate"] for a in accounts if a.get("lastMetricsDate")), default=None)
+    # Capped at the month end: the sync keeps running after the month closes.
+    through = through_month(max((a["lastMetricsDate"] for a in accounts if a.get("lastMetricsDate")), default=None), period_end)
     note = "Attributed revenue is modelled: tracked orders × the average ticket entered for the account." if revenue_cur is not None else None
     return section("ads", metrics=metrics, tables=tables, note=note, data_through=through,
                    sources=[f"Google Ads · {a['name']}" for a in accounts])
@@ -143,4 +144,4 @@ async def build(db: AsyncSession, ctx: Ctx) -> dict:
     ids = [c["id"] for c in campaigns]
     cur = await ads_reports.campaign_totals(db, ctx.period.start, ctx.period.end, ids)
     prev = await ads_reports.campaign_totals(db, ctx.prev.start, ctx.prev.end, ids)
-    return compute(accounts, campaigns, cur, prev, ctx.merchant.get("googleAdsBudget"))
+    return compute(accounts, campaigns, cur, prev, ctx.merchant.get("googleAdsBudget"), period_end=ctx.period.end)

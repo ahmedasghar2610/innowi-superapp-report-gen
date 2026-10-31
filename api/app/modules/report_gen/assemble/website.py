@@ -27,7 +27,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.seo import SeoGa4Daily, SeoSite
-from app.modules.report_gen.assemble import REASONS, Ctx, metric, not_supplied, section, stub
+from app.modules.report_gen.assemble import REASONS, Ctx, metric, not_supplied, section, stub, through_month
 
 READS = {
     "marketing.seo_site": ("id", "name", "domain", "merchant_id", "ga4_property", "source", "status", "last_ga4_date"),
@@ -74,10 +74,9 @@ async def build(db: AsyncSession, ctx: Ctx) -> dict:
     p, q = ctx.period, ctx.prev
     cur = await _sessions(db, ga4_ids, p.start, p.end)
     prev = await _sessions(db, ga4_ids, q.start, q.end)
-    # "Data through" is about the month being reported, so a sync that has run past
-    # the month end still reports the month end, never today.
-    through = max((s["lastGa4Date"] for s in sites if s["ga4Property"] and s["lastGa4Date"]), default=None)
-    return compute(sites, cur, prev, data_through=min(through, p.end) if through else None)
+    # Capped at the month end: the sync keeps running after the month closes.
+    through = through_month(max((s["lastGa4Date"] for s in sites if s["ga4Property"] and s["lastGa4Date"]), default=None), p.end)
+    return compute(sites, cur, prev, data_through=through)
 
 
 __all__ = ["READS", "compute", "build", "ALL_TRAFFIC_NOTE"]

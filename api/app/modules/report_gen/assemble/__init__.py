@@ -113,6 +113,19 @@ def section(key: str, *, included: bool = True, metrics: Optional[list[dict]] = 
     }
 
 
+def through_month(value: Optional[dt.date], period_end: Optional[dt.date]) -> Optional[dt.date]:
+    """"Data through" for a month's report, never later than the month itself.
+
+    A source's `last_*_date` is how far its sync has run, which keeps moving: by
+    the time an August report is generated (or re-generated) the SEO and Ads
+    syncs have reached late October. Printing that under an August heading tells
+    the merchant their August figures cover October. The month end is the honest
+    ceiling; a sync that stopped mid-month still reports where it stopped."""
+    if value is None:
+        return None
+    return min(value, period_end) if period_end else value
+
+
 def find_metric(sec: Optional[dict], id: str) -> Optional[dict]:
     for m in (sec or {}).get("metrics") or []:
         if m["id"] == id:
@@ -259,5 +272,5 @@ def primary_location_text(merchant: dict) -> Optional[str]:
     return ", ".join(parts) or None
 
 
-__all__ = ["Ctx", "SECTION_ORDER", "TITLES", "REASONS", "metric", "not_supplied", "section", "find_metric", "package_switch",
+__all__ = ["Ctx", "SECTION_ORDER", "TITLES", "REASONS", "metric", "not_supplied", "section", "find_metric", "through_month", "package_switch",
            "load_ctx", "compose", "build_payload"]
