@@ -2,7 +2,26 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type ApiError } from "@/lib/api/client";
+import { API_BASE_URL } from "@/lib/constants";
 import type { Queue, Report, ReportGenStatus, SendOutcome, TextPatch } from "./types";
+
+export type ExportKind = "pdf" | "docx";
+
+/**
+ * Download URL for an approved report's PDF / DOCX.
+ *
+ * Deliberately not an Axios call: the API answers these two routes with file
+ * bytes and a Content-Disposition, so a plain `<a href download>` is the right
+ * control — the browser streams it straight to disk and no blob is held in
+ * memory. The access token is an httpOnly cookie on this same origin, so it
+ * rides along with the navigation without the client ever reading it.
+ *
+ * Both routes need only `report_gen.view` (the capability every page here is
+ * already behind), and the API refuses anything that is not approved or sent.
+ */
+export function exportUrl(id: string, kind: ExportKind): string {
+  return `${API_BASE_URL}/report-gen/reports/${encodeURIComponent(id)}/export.${kind}`;
+}
 
 /*
  * The resource client and the query keys live inside the feature on purpose:
