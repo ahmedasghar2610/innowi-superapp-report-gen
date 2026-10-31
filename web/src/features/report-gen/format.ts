@@ -243,9 +243,15 @@ export function renderableTable(name: string, data: unknown): RenderableTable | 
   if (Array.isArray(data)) {
     const rows = data.filter((r): r is Record<string, unknown> => !!r && typeof r === "object");
     if (!rows.length) return null;
-    const columns: string[] = [];
-    for (const row of rows) for (const k of Object.keys(row)) if (!columns.includes(k)) columns.push(k);
-    const numeric = columns.map((c) => rows.every((r) => isNumericKey(r[c])));
+    const seen: string[] = [];
+    for (const row of rows) for (const k of Object.keys(row)) if (!seen.includes(k)) seen.push(k);
+    const isNum = (c: string) => rows.every((r) => isNumericKey(r[c]));
+    // Lead with the label column, as the prototype's tables do. The API's
+    // object-key order is an implementation detail of each adapter and puts the
+    // text column last in some of them (actions, top campaigns, device split).
+    // `filter` is stable, so the relative order inside each group is untouched.
+    const columns = [...seen.filter((c) => !isNum(c)), ...seen.filter(isNum)];
+    const numeric = columns.map(isNum);
     return { kind: "grid", name, title, columns, rows, numeric };
   }
   if (typeof data === "object") {
