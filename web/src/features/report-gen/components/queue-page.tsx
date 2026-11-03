@@ -1,72 +1,37 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { CircleCheck, FileChartColumn, Play, RefreshCw, Send } from "lucide-react";
+import { useId, useMemo, useState } from "react";
+import { FlaskConical, Info, Search as SearchIcon } from "lucide-react";
 import {
-  Badge,
   Button,
+  Card,
   ErrorState,
+  Input,
   Select,
   Skeleton,
-  StatTile,
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
-  TableMessageRow,
   TableRow,
   useToast,
-  type BadgeTone,
 } from "@/components/ui";
 import { cn } from "@/lib/utils/cn";
 import { useApprove, useGenerate, useQueue, useReportGenStatus } from "../api";
-import { initials } from "../format";
-import type { QueueRow, ReportStatus } from "../types";
+import type { QueueRow as Row } from "../types";
+import { QueueSummary } from "./queue-summary";
+import { QueueLine, TOTAL_METRICS, needsAction, rowStatus } from "./queue-row";
+import { ACTION_ORDER, CHIP_ORDER, STATUS_META, type RowStatus } from "./report-status";
 
-/**
- * /report-gen — the queue, laid out as the approved prototype: the status
- * counts and a progress bar across the top, then one row per active merchant
- * with its package, its report status and the single action that row needs.
- *
- * Not built, for want of backing data (see the build notes): the prototype's
- * per-row "data freshness / report-ready" line, which needs sync timestamps on
- * the queue row that the API does not return; and its bulk "generate all due"
- * button, which needs a batch endpoint. Neither is faked here.
- */
-export const STATUS: Record<ReportStatus, { label: string; tone: BadgeTone }> = {
-  generating: { label: "Generating", tone: "accent" },
-  draft: { label: "Draft", tone: "warning" },
-  edited: { label: "Edited", tone: "warning" },
-  approved: { label: "Approved", tone: "success" },
-  sent: { label: "Sent", tone: "success-solid" },
-  failed: { label: "Failed", tone: "danger" },
-  deleted: { label: "Deleted", tone: "neutral" },
-};
+// The review sidebar asks this module for a status description.
+export { STATUS, StatusBadge } from "./report-status";
 
-export function StatusBadge({ s }: { s: ReportStatus }) {
-  const v = STATUS[s] ?? { label: s, tone: "neutral" as BadgeTone };
-  return (
-    <Badge tone={v.tone} icon={false}>
-      {v.label}
-    </Badge>
-  );
-}
-
-/** The bar's segment colour per status — the same hues the badges use. */
-const SEGMENT: Record<string, string> = {
-  due: "bg-muted-foreground/40",
-  generating: "bg-primary/50",
-  draft: "bg-warning",
-  edited: "bg-warning",
-  approved: "bg-success",
-  sent: "bg-success/70",
-  failed: "bg-destructive",
-};
-
-const BAR_ORDER = ["due", "generating", "draft", "edited", "approved", "sent", "failed"] as const;
+type SortKey = "action" | "name" | "completeness";
+const SORTS: { value: SortKey; label: string }[] = [
+  { value: "action", label: "Needs action first" },
+  { value: "name", label: "Name A–Z" },
+  { value: "completeness", label: "Data completeness" },
+];
 
 /** The last twelve ended months as YYYY-MM options, newest first. */
 function monthOptions(): { value: string; label: string }[] {
@@ -75,41 +40,204 @@ function monthOptions(): { value: string; label: string }[] {
   d.setDate(1);
   for (let i = 1; i <= 12; i++) {
     const m = new Date(d.getFullYear(), d.getMonth() - i, 1);
-    const value = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`;
-    out.push({ value, label: m.toLocaleDateString("en-US", { month: "long", year: "numeric" }) });
+    out.push({
+      value: `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`,
+      label: m.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+    });
   }
   return out;
 }
 
+/** /report-gen — the command table: one row per active merchant for the month. */
 export function QueuePage() {
   const months = useMemo(monthOptions, []);
   const [month, setMonth] = useState(months[0].value);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"all" | "action" | RowStatus>("all");
+  const [sort, setSort] = useState<SortKey>("action");
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+
   const status = useReportGenStatus();
   const q = useQueue(month);
   const d = q.data;
+  const canManage = !!status.data?.canManage;
+  const canApprove = !!status.data?.canApprove;
+
+  const rows = useMemo(() => d?.merchants ?? [], [d]);
+  const counts = useMemo(() => {
+    const c = Object.fromEntries((Object.keys(STATUS_META) as RowStatus[]).map((k) => [k, 0])) as Record<RowStatus, number>;
+    for (const r of rows) c[rowStatus(r)] = (c[rowStatus(r)] ?? 0) + 1;
+    return c;
+  }, [rows]);
+
+  const shown = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    let out = rows.filter((r) => (needle ? r.merchant.name.toLowerCase().includes(needle) : true));
+    if (filter === "action") out = out.filter(needsAction);
+    else if (filter !== "all") out = out.filter((r) => rowStatus(r) === filter);
+
+    const completeness = (r: Row) => (r.report ? (TOTAL_METRICS - r.report.missingCount) / TOTAL_METRICS : -1);
+    const byName = (a: Row, b: Row) => a.merchant.name.localeCompare(b.merchant.name);
+    return [...out].sort((a, b) => {
+      if (sort === "name") return byName(a, b);
+      if (sort === "completeness") return completeness(b) - completeness(a) || byName(a, b);
+      return ACTION_ORDER.indexOf(rowStatus(a)) - ACTION_ORDER.indexOf(rowStatus(b)) || byName(a, b);
+    });
+  }, [rows, query, filter, sort]);
 
   if (q.error) return <ErrorState title="Couldn't load the report queue" description={q.error.message} />;
   if (!d) return <Skeleton className="h-96 w-full" />;
-  const c = d.counts;
-  const canManage = !!status.data?.canManage;
-  const canApprove = !!status.data?.canApprove;
-  const total = c.merchants ?? d.merchants.length;
 
-  const segments = BAR_ORDER.map((k) => ({ k, n: c[k] ?? 0 })).filter((s) => s.n > 0);
+  const monthLabel = months.find((m) => m.value === month)?.label ?? d.period.label;
+  const approvedRow = rows.filter((r) => rowStatus(r) === "approved");
+
+  const toggle = (id: string, next: boolean) =>
+    setPicked((prev) => {
+      const s = new Set(prev);
+      if (next) s.add(id);
+      else s.delete(id);
+      return s;
+    });
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex-1">
-          <h2 className="text-base font-semibold text-foreground">Merchant Reports</h2>
-          <p className="text-xs text-muted-foreground">
-            One click builds a merchant&apos;s monthly report from live Super App data. A manager approves it before anything is sent.
-            {status.data && status.data.sendMode !== "live" ? ` Send mode: ${status.data.sendMode} — nothing leaves the building.` : ""}
-          </p>
+    <div className="flex flex-col gap-6">
+      <Header month={month} months={months} onMonth={setMonth} />
+
+      <QueueSummary
+        counts={counts}
+        total={rows.length}
+        monthLabel={monthLabel}
+        approvedName={approvedRow.length === 1 ? approvedRow[0].merchant.name : null}
+        onNeedsAction={() => { setFilter("action"); setQuery(""); }}
+      />
+
+      <Toolbar
+        query={query}
+        onQuery={setQuery}
+        filter={filter}
+        onFilter={setFilter}
+        counts={counts}
+        total={rows.length}
+        actionCount={rows.filter(needsAction).length}
+        sort={sort}
+        onSort={setSort}
+      />
+
+      <Card className="rounded-xl p-0 shadow-sm">
+        <BulkBar rows={rows} picked={picked} onClear={() => setPicked(new Set())} month={month} canApprove={canApprove} canManage={canManage} />
+
+        {rows.length === 0 ? (
+          <EmptyMonth monthLabel={monthLabel} />
+        ) : shown.length === 0 ? (
+          <NoMatches onClear={() => { setQuery(""); setFilter("all"); }} />
+        ) : (
+          <>
+            {/*
+             * The table is laid out `fixed` at percentage column widths so it
+             * always fits the card: no column can be widened by its content.
+             * `overflow-x-clip` rather than `-hidden` because `clip` is not a
+             * scroll container — a scroll container would both re-anchor the
+             * sticky header to this box and force overflow-y to `auto`. The
+             * primitive hard-codes the <table> class, so `table-fixed` and the
+             * below-md block mode reach it as child selectors instead of props.
+             */}
+            <Table
+              className={cn(
+                "overflow-x-clip rounded-none border-0",
+                "[&>table]:table-fixed max-md:[&>table]:block",
+              )}
+            >
+              <TableHeader className="sticky top-0 z-10 bg-card max-md:hidden">
+                <TableRow>
+                  {/* No `relative` here: the primitive's `sticky` is already a
+                      positioned ancestor for the absolute `sr-only` span, and
+                      `relative` would replace it and break the sticky header. */}
+                  <TableHead className="md:w-[4%]">
+                    <span className="sr-only">Select</span>
+                  </TableHead>
+                  {/* Headers wrap rather than force a column wider than its share. */}
+                  <TableHead className="whitespace-normal md:w-[48%] lg:w-[37%] xl:w-[24%]">Merchant</TableHead>
+                  <TableHead className="whitespace-normal md:w-[20%] xl:w-[15%]">Status</TableHead>
+                  <TableHead className="hidden whitespace-normal lg:table-cell lg:w-[17%]">Data completeness</TableHead>
+                  <TableHead className="hidden whitespace-normal xl:table-cell xl:w-[20%]">Services &amp; linked data</TableHead>
+                  <TableHead align="right" className="whitespace-normal md:w-[28%] lg:w-[22%] xl:w-[20%]">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="max-md:block">
+                {shown.map((row) => (
+                  <QueueLine
+                    key={row.merchant.id}
+                    row={row}
+                    month={month}
+                    canManage={canManage}
+                    canApprove={canApprove}
+                    selected={picked.has(row.merchant.id)}
+                    onSelect={toggle}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3 text-xs text-muted-foreground">
+              <span>
+                Showing <span className="tabular-nums">{shown.length}</span> of <span className="tabular-nums">{rows.length}</span> merchants
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-primary" aria-hidden /> needs your action
+              </span>
+            </div>
+          </>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- header ---- */
+function Header({ month, months, onMonth }: { month: string; months: { value: string; label: string }[]; onMonth: (v: string) => void }) {
+  const [tip, setTip] = useState(false);
+  const tipId = useId();
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-xl font-semibold tracking-[-0.01em] text-foreground">Merchant Reports</h1>
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Generate, review and approve each merchant&apos;s monthly report. Nothing is sent until a manager approves it.
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative">
+          <button
+            type="button"
+            aria-describedby={tip ? tipId : undefined}
+            onMouseEnter={() => setTip(true)}
+            onMouseLeave={() => setTip(false)}
+            onFocus={() => setTip(true)}
+            onBlur={() => setTip(false)}
+            onKeyDown={(e) => e.key === "Escape" && setTip(false)}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-warning-soft px-3 text-xs font-medium text-warning-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            <FlaskConical className="size-3.5" aria-hidden />
+            Test mode · no e-mails are sent
+            <Info className="size-3.5" aria-hidden />
+          </button>
+          {tip && (
+            <div
+              role="tooltip"
+              id={tipId}
+              className="absolute right-0 top-[calc(100%+6px)] z-40 w-72 rounded-lg border border-border bg-card p-3 text-left shadow-lg"
+            >
+              <p className="text-sm font-semibold text-foreground">You&apos;re in test mode</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Approve and send work exactly as normal, but no e-mail leaves Innowi. An admin can switch on live sending.
+              </p>
+            </div>
+          )}
         </div>
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          Month
-          <Select value={month} onChange={(e) => setMonth(e.target.value)} className="w-44">
+          <span className="sr-only sm:not-sr-only">Month</span>
+          <Select value={month} onChange={(e) => onMonth(e.target.value)} className="min-h-10 w-44">
             {months.map((m) => (
               <option key={m.value} value={m.value}>
                 {m.label}
@@ -118,194 +246,166 @@ export function QueuePage() {
           </Select>
         </label>
       </div>
+    </div>
+  );
+}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <StatTile label="Merchants" value={total} />
-        <StatTile label="Not generated" value={c.due ?? 0} tone={c.due ? "warning" : "ok"} status={c.due ? "Click Generate" : "All generated"} />
-        <StatTile
-          label="Drafts"
-          value={(c.draft ?? 0) + (c.edited ?? 0)}
-          tone={(c.draft ?? 0) + (c.edited ?? 0) ? "warning" : "neutral"}
-          status="Waiting for review"
-        />
-        <StatTile label="Approved" value={c.approved ?? 0} tone={c.approved ? "ok" : "neutral"} status="Ready to send" />
-        <StatTile label="Sent" value={c.sent ?? 0} tone="neutral" />
-        <StatTile
-          label="Failed"
-          value={c.failed ?? 0}
-          tone={c.failed ? "danger" : "neutral"}
-          status={c.failed ? "Open the report for the error" : "No failures"}
+/* ------------------------------------------------------------- toolbar ---- */
+function Toolbar({
+  query,
+  onQuery,
+  filter,
+  onFilter,
+  counts,
+  total,
+  actionCount,
+  sort,
+  onSort,
+}: {
+  query: string;
+  onQuery: (v: string) => void;
+  filter: "all" | "action" | RowStatus;
+  onFilter: (v: "all" | "action" | RowStatus) => void;
+  counts: Record<RowStatus, number>;
+  total: number;
+  actionCount: number;
+  sort: SortKey;
+  onSort: (v: SortKey) => void;
+}) {
+  const chips: { key: "all" | "action" | RowStatus; label: string; count: number }[] = [
+    { key: "all", label: "All", count: total },
+    { key: "action", label: "Needs action", count: actionCount },
+    ...CHIP_ORDER.filter((k) => (counts[k] ?? 0) > 0).map((k) => ({ key: k, label: STATUS_META[k].label, count: counts[k] })),
+  ];
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="relative min-w-[14rem] flex-1 sm:max-w-xs">
+        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+        <Input
+          type="search"
+          value={query}
+          onChange={(e) => onQuery(e.target.value)}
+          placeholder="Search merchants"
+          aria-label="Search merchants"
+          className="min-h-10 pl-9"
         />
       </div>
-
-      {/* Status bar + legend, the prototype's "report pipeline" strip. */}
-      {total > 0 && (
-        <div className="flex flex-col gap-2.5" data-testid="queue-pipeline">
-          <div
-            className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-muted"
-            role="img"
-            aria-label={segments.map((s) => `${STATUS[s.k as ReportStatus]?.label ?? "Not generated"} ${s.n}`).join(", ")}
-          >
-            {segments.map((s) => (
-              <div key={s.k} className={cn("h-full", SEGMENT[s.k])} style={{ width: `${(s.n / total) * 100}%` }} />
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-            {BAR_ORDER.map((k) => (
-              <span key={k} className="flex items-center gap-1.5 text-xs text-foreground">
-                <span className={cn("size-2 shrink-0 rounded-full", SEGMENT[k])} />
-                {k === "due" ? "Not generated" : STATUS[k as ReportStatus]?.label ?? k}
-                <strong className="tabular-nums">{c[k] ?? 0}</strong>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Merchant</TableHead>
-            <TableHead>Service package</TableHead>
-            <TableHead>Linked data</TableHead>
-            <TableHead>Report</TableHead>
-            <TableHead align="right">Not supplied</TableHead>
-            <TableHead align="right" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {d.merchants.map((row) => (
-            <QueueLine key={row.merchant.id} row={row} month={month} canManage={canManage} canApprove={canApprove} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        {chips.map((c) => {
+          const on = filter === c.key;
+          return (
+            <button
+              key={c.key}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onFilter(c.key)}
+              className={cn(
+                "inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                on ? "border-primary bg-accent text-primary-subtle-foreground" : "border-border bg-card text-muted-foreground hover:bg-muted",
+              )}
+            >
+              {c.label}
+              <span className={cn("tabular-nums", on ? "text-primary-subtle-foreground" : "text-muted-foreground")}>{c.count}</span>
+            </button>
+          );
+        })}
+      </div>
+      <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="sr-only sm:not-sr-only">Sort</span>
+        <Select value={sort} onChange={(e) => onSort(e.target.value as SortKey)} className="min-h-10 w-48" aria-label="Sort merchants">
+          {SORTS.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
           ))}
-          {d.merchants.length === 0 && <TableMessageRow colSpan={6}>No active merchants.</TableMessageRow>}
-        </TableBody>
-      </Table>
-      <p className="text-xs text-muted-foreground">
-        A section appears only for services the merchant has taken. A taken service with no data prints &quot;not supplied&quot; and the reason,
-        never zero.
+        </Select>
+      </label>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------ bulk bar ---- */
+/** Bulk actions loop over the same single-row handlers. */
+function BulkBar({
+  rows,
+  picked,
+  onClear,
+  month,
+  canApprove,
+  canManage,
+}: {
+  rows: Row[];
+  picked: Set<string>;
+  onClear: () => void;
+  month: string;
+  canApprove: boolean;
+  canManage: boolean;
+}) {
+  const approve = useApprove();
+  const gen = useGenerate();
+  const { toast } = useToast();
+  if (picked.size === 0) return null;
+
+  const chosen = rows.filter((r) => picked.has(r.merchant.id));
+  const approvable = chosen.filter((r) => ["draft", "edited"].includes(rowStatus(r)));
+  const missing = chosen.filter((r) => rowStatus(r) === "due");
+
+  return (
+    <div data-testid="queue-bulk-bar" className="flex flex-wrap items-center gap-3 border-b border-border bg-accent/50 px-4 py-2.5">
+      <span className="text-sm font-medium text-foreground">
+        <span className="tabular-nums">{picked.size}</span> selected
+      </span>
+      <Button
+        size="sm"
+        variant="default"
+        disabled={!canApprove || approvable.length === 0}
+        loading={approve.isPending}
+        onClick={() => {
+          approvable.forEach((r) => r.report && approve.mutate(r.report.id));
+          toast({ variant: "success", title: `Approving ${approvable.length} report${approvable.length === 1 ? "" : "s"}` });
+        }}
+      >
+        Approve selected
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={!canManage || missing.length === 0}
+        loading={gen.isPending}
+        onClick={() => {
+          missing.forEach((r) => gen.mutate({ merchantId: r.merchant.id, month }));
+          toast({ variant: "success", title: `Generating ${missing.length} report${missing.length === 1 ? "" : "s"}` });
+        }}
+      >
+        Generate missing ({missing.length})
+      </Button>
+      <Button size="sm" variant="ghost" className="ml-auto" onClick={onClear}>
+        Clear selection
+      </Button>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------- empty states ---- */
+function EmptyMonth({ monthLabel }: { monthLabel: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
+      <p className="text-sm font-semibold text-foreground">No active merchants in {monthLabel}</p>
+      <p className="max-w-sm text-sm text-muted-foreground">
+        When a merchant becomes active for this month it appears here, ready to generate.
       </p>
     </div>
   );
 }
 
-/** The merchant cell: initials avatar, name, cuisine and location count. */
-function MerchantCell({ row }: { row: QueueRow }) {
-  const m = row.merchant;
-  const sub = [m.cuisine, m.locationCount && m.locationCount > 1 ? `${m.locationCount} locations` : null].filter(Boolean).join(" · ");
+function NoMatches({ onClear }: { onClear: () => void }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <span
-        aria-hidden
-        className="flex size-8 shrink-0 items-center justify-center rounded-md bg-accent text-xs font-semibold text-primary-subtle-foreground"
-      >
-        {initials(m.name)}
-      </span>
-      <div className="flex min-w-0 flex-col">
-        <span className="truncate font-medium text-foreground">{m.name}</span>
-        {sub && <span className="truncate text-xs text-muted-foreground">{sub}</span>}
-      </div>
+    <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+      <p className="text-sm font-semibold text-foreground">No merchants match</p>
+      <Button size="sm" variant="outline" onClick={onClear}>
+        Clear filters
+      </Button>
     </div>
-  );
-}
-
-function QueueLine({ row, month, canManage, canApprove }: { row: QueueRow; month: string; canManage: boolean; canApprove: boolean }) {
-  const gen = useGenerate();
-  const approve = useApprove();
-  const router = useRouter();
-  const { toast } = useToast();
-  const r = row.report;
-  const links = [row.links.ads ? `Ads ×${row.links.ads}` : null, row.links.seo ? `SEO ×${row.links.seo}` : null].filter(Boolean).join(" · ");
-  const canRegenerate = !r || ["draft", "edited", "failed", "deleted"].includes(r.status);
-  const isDraft = !!r && (r.status === "draft" || r.status === "edited");
-
-  const generate = () =>
-    gen.mutate(
-      { merchantId: row.merchant.id, month },
-      {
-        onSuccess: (rep) => {
-          toast({
-            variant: rep.status === "failed" ? "error" : "success",
-            title: rep.status === "failed" ? "Generation failed" : "Draft ready",
-            description: rep.error ?? undefined,
-          });
-          router.push(`/report-gen/${rep.id}`);
-        },
-        onError: (e) => toast({ variant: "error", title: "Couldn't generate", description: e.message }),
-      },
-    );
-
-  return (
-    <TableRow>
-      <TableCell>
-        <MerchantCell row={row} />
-      </TableCell>
-      <TableCell>
-        {row.services.length ? (
-          <div className="flex flex-wrap gap-1">
-            {row.services.map((s) => (
-              <Badge key={s} tone="neutral" icon={false}>
-                {s}
-              </Badge>
-            ))}
-          </div>
-        ) : (
-          <span className="text-xs text-muted-foreground">No service recorded</span>
-        )}
-      </TableCell>
-      <TableCell className="text-xs text-muted-foreground">{links || "No Ads or SEO link"}</TableCell>
-      <TableCell>
-        {r ? (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <StatusBadge s={r.status} />
-              <span className="text-xs text-muted-foreground">v{r.version}</span>
-            </div>
-            {r.error && <span className="text-xs leading-4 text-text-destructive">{r.error}</span>}
-          </div>
-        ) : (
-          <span className="text-xs text-muted-foreground">Not generated</span>
-        )}
-      </TableCell>
-      <TableCell align="right" className="tabular-nums">
-        {r ? r.missingCount : "—"}
-      </TableCell>
-      <TableCell align="right">
-        <div className="flex justify-end gap-1.5">
-          {r && (
-            <Link href={`/report-gen/${r.id}`}>
-              <Button size="sm" variant="outline">
-                <FileChartColumn /> Open
-              </Button>
-            </Link>
-          )}
-          {/* One primary action per row, chosen by that row's status. */}
-          {isDraft && canApprove ? (
-            <Button
-              size="sm"
-              variant="default"
-              loading={approve.isPending}
-              onClick={() =>
-                approve.mutate(r!.id, {
-                  onSuccess: () => toast({ variant: "success", title: "Approved — snapshot frozen" }),
-                  onError: (e) => toast({ variant: "error", title: "Couldn't approve", description: e.message }),
-                })
-              }
-            >
-              <CircleCheck /> Approve
-            </Button>
-          ) : r?.status === "approved" && canApprove ? (
-            <Link href={`/report-gen/${r.id}`}>
-              <Button size="sm" variant="default">
-                <Send /> Send
-              </Button>
-            </Link>
-          ) : canManage && canRegenerate ? (
-            <Button size="sm" variant="default" loading={gen.isPending} onClick={generate}>
-              {r ? <RefreshCw /> : <Play />} {r ? "Regenerate" : "Generate"}
-            </Button>
-          ) : null}
-        </div>
-      </TableCell>
-    </TableRow>
   );
 }

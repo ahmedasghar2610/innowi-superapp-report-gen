@@ -102,9 +102,9 @@ export function dateTime(value: string | null | undefined): string {
 
 /** "18 months of history" from the merchant's go-live date (MFR03's YoY gate). */
 export function historyLine(goLiveDate: string | null): string {
-  if (!goLiveDate) return "Go-live date not recorded";
+  if (!goLiveDate) return "Not available";
   const start = new Date(`${goLiveDate.slice(0, 10)}T00:00:00`);
-  if (Number.isNaN(start.getTime())) return "Go-live date not recorded";
+  if (Number.isNaN(start.getTime())) return "Not available";
   const now = new Date();
   const months = Math.max(0, (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()));
   const yoy = months >= 12 ? "year-on-year available" : "year-on-year starts at 12 months";

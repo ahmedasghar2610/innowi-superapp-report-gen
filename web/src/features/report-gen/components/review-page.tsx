@@ -1,20 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, CircleCheck, Pencil, Send, Trash2 } from "lucide-react";
-import { Button, Card, Dialog, ErrorState, Field, Skeleton, Textarea, useToast } from "@/components/ui";
-import { useApprove, useDeleteReport, useEditText, useReport, useSendReport } from "../api";
-import { dateTime } from "../format";
+import { Pencil } from "lucide-react";
+import { Button, Card, ErrorState, Field, Skeleton, Textarea, useToast } from "@/components/ui";
+import { useEditText, useReport } from "../api";
 import type { Recommendation, Report, Snapshot } from "../types";
-import { StatusBadge } from "./queue-page";
 import { ReportDocument } from "./report-document";
-import { ExportButtons, FrozenBanner, NeverInThisReport, PreviewOptions, ReportSetup } from "./report-setup";
+import { FrozenBanner } from "./report-setup";
+import { ReportSidebar } from "./report-sidebar";
 
 /**
  * /report-gen/[reportId] — the merchant report, laid out as the approved
- * prototype: the document on the left, review actions and report setup on the
- * right.
+ * prototype: the document on the left, and on the right a five-tab toolkit
+ * (Review · Edit · Preview · Details · Activity) — see report-sidebar.tsx.
+ *
+ * `editing` and `merchantView` live here because both the document and the
+ * sidebar need them: the sidebar's Edit tab turns editing on, and the
+ * textareas appear beside the text they change.
  *
  * Not built, for want of backing data (see the build notes): the headline-card
  * sparklines and the per-section six-month trend bars, which need a metric
@@ -26,6 +28,7 @@ export function ReviewPage({ id }: { id: string }) {
   const q = useReport(id);
   const r = q.data;
   const [merchantView, setMerchantView] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     if (r?.merchant) document.title = `${r.merchant.name} — ${r.period.label} report — Innowi`;
@@ -35,6 +38,9 @@ export function ReviewPage({ id }: { id: string }) {
   if (!r) return <Skeleton className="h-[40rem] w-full" />;
   const snap = r.snapshot as Snapshot;
   const hasSnapshot = !!snap && !!snap.sections;
+  // Unchanged rule: only a draft can be edited, and never while previewing as
+  // the merchant.
+  const canEdit = r.canManage && (r.status === "draft" || r.status === "edited") && !merchantView;
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-5 xl:grid-cols-[minmax(0,1fr)_21rem]">
@@ -42,21 +48,32 @@ export function ReviewPage({ id }: { id: string }) {
         <div className="mx-auto flex w-full max-w-[940px] flex-col gap-4">
           <FrozenBanner r={r} />
           {hasSnapshot ? (
-            <Document r={r} snap={snap} merchantView={merchantView} />
+            <Document r={r} snap={snap} merchantView={merchantView} editing={editing && canEdit} onEditing={setEditing} canEdit={canEdit} />
           ) : (
             <Card className="p-5 text-sm text-muted-foreground">{r.error ?? "This report has no snapshot yet."}</Card>
           )}
         </div>
       </div>
-      <aside className="order-1 flex flex-col gap-4 xl:sticky xl:top-0 xl:order-2">
-        <ReviewPanel r={r} />
-        {hasSnapshot && (
-          <>
-            <PreviewOptions merchantView={merchantView} onChange={setMerchantView} />
-            <ReportSetup r={r} snap={snap} />
-          </>
-        )}
-        <NeverInThisReport />
+      {/*
+        Height budget. `main` in the app shell is the scroll container and the
+        h-16 topbar sits above it in normal flow, so `top-0` is already below
+        the header — no header offset is needed. What is left below the sticky
+        top is 100dvh − 64px (topbar) − 24px (main's pt-6), and 16px is kept
+        back so the card's rounded bottom never sits flush against the edge.
+
+        Below xl the sidebar stacks above the document, so it is capped harder:
+        a tall card there would push the report itself off the screen.
+      */}
+      <aside className="order-1 flex max-h-[min(70dvh,34rem)] min-h-0 flex-col xl:sticky xl:top-0 xl:order-2 xl:max-h-[calc(100dvh-6.5rem)]">
+        <ReportSidebar
+          r={r}
+          snap={hasSnapshot ? snap : null}
+          merchantView={merchantView}
+          onMerchantView={setMerchantView}
+          editing={editing}
+          onEditing={setEditing}
+          canEdit={canEdit}
+        />
       </aside>
     </div>
   );
@@ -64,10 +81,23 @@ export function ReviewPage({ id }: { id: string }) {
 
 /* ------------------------------------------------------------ document ---- */
 /** The document, with the reviewer's editable text folded into it. */
-function Document({ r, snap, merchantView }: { r: Report; snap: Snapshot; merchantView: boolean }) {
+function Document({
+  r,
+  snap,
+  merchantView,
+  editing,
+  onEditing,
+  canEdit,
+}: {
+  r: Report;
+  snap: Snapshot;
+  merchantView: boolean;
+  editing: boolean;
+  onEditing: (v: boolean) => void;
+  canEdit: boolean;
+}) {
   const edit = useEditText();
   const { toast } = useToast();
-  const [editing, setEditing] = useState(false);
   const [summary, setSummary] = useState(snap.summary.join("\n\n"));
   const [bottom, setBottom] = useState(snap.bottomLine);
   const [recs, setRecs] = useState<Recommendation[]>(snap.recommendations);
@@ -78,15 +108,12 @@ function Document({ r, snap, merchantView }: { r: Report; snap: Snapshot; mercha
     setRecs(snap.recommendations);
   }, [snap]);
 
-  // Only a draft can be edited, and never in the merchant preview.
-  const canEdit = r.canManage && (r.status === "draft" || r.status === "edited") && !merchantView;
-
   const save = () =>
     edit.mutate(
       { id: r.id, patch: { summary: summary.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean), bottomLine: bottom, recommendations: recs } },
       {
         onSuccess: () => {
-          setEditing(false);
+          onEditing(false);
           toast({ variant: "success", title: "Text saved" });
         },
         onError: (e) => toast({ variant: "error", title: "Couldn't save", description: e.message }),
@@ -106,7 +133,7 @@ function Document({ r, snap, merchantView }: { r: Report; snap: Snapshot; mercha
               <p key={i}>{p}</p>
             ))}
             {canEdit && (
-              <Button size="xs" variant="ghost" className="mt-1 self-start" onClick={() => setEditing(true)}>
+              <Button size="xs" variant="ghost" className="mt-1 self-start" onClick={() => onEditing(true)}>
                 <Pencil /> Edit the written text
               </Button>
             )}
@@ -153,185 +180,12 @@ function Document({ r, snap, merchantView }: { r: Report; snap: Snapshot; mercha
             <Button size="sm" variant="default" loading={edit.isPending} onClick={save}>
               Save text
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
+            <Button size="sm" variant="ghost" onClick={() => onEditing(false)}>
               Cancel
             </Button>
           </div>
         </Card>
       )}
-    </>
-  );
-}
-
-/* ---------------------------------------------------------- review panel ---- */
-function ReviewPanel({ r }: { r: Report }) {
-  const approve = useApprove();
-  const del = useDeleteReport();
-  const send = useSendReport();
-  const { toast } = useToast();
-  const [confirm, setConfirm] = useState<"delete" | "send" | null>(null);
-  const isDraft = r.status === "draft" || r.status === "edited";
-  const canSend = r.canApprove && (r.status === "approved" || (r.status === "failed" && !!r.approvedAt)) && !r.sentAt;
-  const canDelete = r.canManage && ["draft", "edited", "approved", "failed"].includes(r.status);
-
-  return (
-    <>
-      <Card className="flex flex-col gap-4 p-4">
-        <Link href="/report-gen" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:underline">
-          <ArrowLeft className="size-3.5" /> Back to the queue
-        </Link>
-        <div className="flex flex-col gap-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge s={r.status} />
-            <span className="text-xs text-muted-foreground">Version {r.version}</span>
-          </div>
-          <h2 className="text-lg font-semibold tracking-[-0.006em] text-foreground">{r.merchant?.name ?? "Merchant"}</h2>
-          <p className="text-xs text-muted-foreground">{r.period.label} · monthly report</p>
-          {r.error && <p className="text-xs text-text-destructive">{r.error}</p>}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          {isDraft && r.canApprove && (
-            <Button
-              variant="default"
-              loading={approve.isPending}
-              disabled={!!r.approveBlocked}
-              title={r.approveBlocked ?? undefined}
-              onClick={() =>
-                approve.mutate(r.id, {
-                  onSuccess: () => toast({ variant: "success", title: "Approved — snapshot frozen" }),
-                  onError: (e) => toast({ variant: "error", title: "Couldn't approve", description: e.message }),
-                })
-              }
-            >
-              <CircleCheck /> Approve
-            </Button>
-          )}
-          {isDraft && r.approveBlocked && <p className="text-xs text-muted-foreground">{r.approveBlocked}</p>}
-          <ExportButtons r={r} />
-          {canSend && (
-            <Button variant="outline" onClick={() => setConfirm("send")}>
-              <Send /> {r.sendMode === "live" ? "Send to merchant" : `Send (${r.sendMode})`}
-            </Button>
-          )}
-          {canDelete && (
-            <Button variant="ghost" onClick={() => setConfirm("delete")}>
-              <Trash2 /> Delete
-            </Button>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-          <div>Recipients: {r.defaultRecipients.length ? r.defaultRecipients.join(", ") : "none on file (add an OWNER or MARKETING contact with an e-mail)"}</div>
-          {r.generatedBy && (
-            <div>
-              Generated by {r.generatedBy.name} · {dateTime(r.generatedAt)}
-            </div>
-          )}
-          {r.approvedBy && (
-            <div>
-              Approved by {r.approvedBy.name} · {dateTime(r.approvedAt)}
-            </div>
-          )}
-          {r.sentAt && <div>Sent · {dateTime(r.sentAt)}</div>}
-          {r.deletedBy && (
-            <div>
-              Deleted by {r.deletedBy.name} · {dateTime(r.deletedAt)}
-            </div>
-          )}
-          {r.missing.length > 0 && (
-            <div>
-              {r.missing.length} figure{r.missing.length === 1 ? "" : "s"} not supplied
-            </div>
-          )}
-        </div>
-
-        {r.history.length > 0 && (
-          <div>
-            <div className="mb-1 text-xs font-medium text-foreground">History</div>
-            <ol className="flex flex-col gap-1 text-xs text-muted-foreground">
-              {r.history.map((h, i) => (
-                <li key={i}>
-                  {dateTime(h.at)} · {h.action.replace("_", " ")} v{h.version}
-                  {h.user ? ` · ${h.user.name}` : ""}
-                  {h.note ? ` · ${h.note}` : ""}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </Card>
-
-      <Dialog
-        open={confirm === "delete"}
-        onClose={() => setConfirm(null)}
-        title="Delete this report?"
-        description="The draft is hidden from the queue. Its history stays, and a new report can be generated for the same month."
-        tone="danger"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setConfirm(null)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              loading={del.isPending}
-              onClick={() =>
-                del.mutate(r.id, {
-                  onSuccess: () => {
-                    setConfirm(null);
-                    toast({ variant: "success", title: "Report deleted" });
-                  },
-                  onError: (e) => toast({ variant: "error", title: "Couldn't delete", description: e.message }),
-                })
-              }
-            >
-              Delete
-            </Button>
-          </>
-        }
-      />
-
-      <Dialog
-        open={confirm === "send"}
-        onClose={() => setConfirm(null)}
-        title={r.sendMode === "live" ? "Send the approved report?" : `Send in ${r.sendMode} mode`}
-        description={
-          r.sendMode === "live"
-            ? `The approved version goes to ${r.defaultRecipients.join(", ") || "nobody"}.`
-            : "Dry run: the recipients and subject are recorded, nothing is e-mailed, and the report stays approved."
-        }
-        tone="primary"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setConfirm(null)}>
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              loading={send.isPending}
-              onClick={() =>
-                send.mutate(
-                  { id: r.id },
-                  {
-                    onSuccess: (res) => {
-                      setConfirm(null);
-                      toast({
-                        variant: "success",
-                        title: res.send.status === "sent" ? "Sent" : "Dry run recorded",
-                        description: `${res.send.subject} → ${res.send.recipients.join(", ")}`,
-                      });
-                    },
-                    onError: (e) => toast({ variant: "error", title: "Couldn't send", description: e.message }),
-                  },
-                )
-              }
-            >
-              {r.sendMode === "live" ? "Send" : "Run dry run"}
-            </Button>
-          </>
-        }
-      />
     </>
   );
 }

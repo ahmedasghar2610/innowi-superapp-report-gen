@@ -1,16 +1,20 @@
 "use client";
 
 import { Download, Lock, ShieldCheck } from "lucide-react";
-import { Button, Card } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils/cn";
 import { exportUrl } from "../api";
 import { dateTime, historyLine, longDate } from "../format";
+import { BTN, ICON_DOWN } from "./sidebar-fx";
 import type { Report, Snapshot } from "../types";
 
 /**
- * The right-hand column of the prototype's merchant report: report setup, the
- * preview switch, and the standing note about what never appears in a
- * merchant-facing report.
+ * Panels used by the review page's sidebar toolkit (see report-sidebar.tsx):
+ * report details, the client-view switch, the export links and the privacy
+ * note. The sidebar decides which tab each one appears in.
+ *
+ * None of these render their own Card any more — every tab's panel lives
+ * inside the sidebar's single card, so they return bare sections.
  */
 
 /* ----------------------------------------------------------- downloads ---- */
@@ -24,16 +28,16 @@ export function ExportButtons({ r }: { r: Report }) {
   const ready = r.status === "approved" || r.status === "sent";
   if (!ready) {
     return (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" disabled className="flex-1">
+          <Button variant="outline" disabled className="flex-1">
             <Download /> PDF
           </Button>
-          <Button size="sm" variant="outline" disabled className="flex-1">
+          <Button variant="outline" disabled className="flex-1">
             <Download /> DOCX
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">A file is made from the approved snapshot, so approve the report first.</p>
+        <p className="text-xs leading-5 text-muted-foreground">A file is made from the approved snapshot, so approve the report first.</p>
       </div>
     );
   }
@@ -42,7 +46,7 @@ export function ExportButtons({ r }: { r: Report }) {
       {(["pdf", "docx"] as const).map((kind) => (
         // <a> wrapping <Button>, the pattern the queue page already uses for Link.
         <a key={kind} href={exportUrl(r.id, kind)} download className="flex-1" data-testid={`report-export-${kind}`}>
-          <Button size="sm" variant="outline" className="w-full">
+          <Button variant="outline" className={cn("w-full", BTN, ICON_DOWN)}>
             <Download /> {kind.toUpperCase()}
           </Button>
         </a>
@@ -51,7 +55,7 @@ export function ExportButtons({ r }: { r: Report }) {
   );
 }
 
-/* --------------------------------------------------------------- setup ---- */
+/* ------------------------------------------------------------- details ---- */
 export function ReportSetup({ r, snap }: { r: Report; snap: Snapshot }) {
   const locations = snap.merchant.locationCount ?? null;
   const where = [snap.merchant.city, snap.merchant.state].filter(Boolean).join(", ");
@@ -70,19 +74,22 @@ export function ReportSetup({ r, snap }: { r: Report; snap: Snapshot }) {
   ];
 
   return (
-    <Card className="flex flex-col gap-3.5 p-4">
-      <h2 className="text-sm font-semibold text-foreground">Report setup</h2>
+    <section className="flex flex-col gap-3.5">
+      <h2 className="text-sm font-semibold text-foreground">Report details</h2>
       <dl className="flex flex-col text-xs">
         {rows.map(([k, v]) => (
-          <div key={k} className="flex justify-between gap-3 border-b border-border py-2 last:border-0">
+          <div
+            key={k}
+            className="flex justify-between gap-3 rounded-md border-b border-border px-2 py-2 transition-colors last:border-0 hover:bg-muted/60"
+          >
             <dt className="shrink-0 text-muted-foreground">{k}</dt>
-            <dd className="text-right font-medium text-foreground">{v}</dd>
+            <dd className="min-w-0 text-right font-medium text-foreground [overflow-wrap:anywhere]">{v}</dd>
           </div>
         ))}
       </dl>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold text-foreground">Service package</span>
+        <span className="text-xs font-semibold text-foreground">Included services</span>
         <div className="flex flex-wrap gap-1.5">
           {modules.map((m) => (
             <span
@@ -97,32 +104,29 @@ export function ReportSetup({ r, snap }: { r: Report; snap: Snapshot }) {
           ))}
         </div>
         <p className="text-xs leading-5 text-muted-foreground">
-          A section appears only for a module the merchant has taken. Struck-through modules are not in this package, so they get no section at all.
+          Only subscribed services appear in the report. Crossed-out items are not part of this package.
         </p>
         {snap.services.length > 0 && <p className="text-xs text-muted-foreground">Contracted: {snap.services.join(" · ")}</p>}
       </div>
-    </Card>
+    </section>
   );
 }
 
-/* ----------------------------------------------------- preview options ---- */
+/* ------------------------------------------------------------- preview ---- */
 export function PreviewOptions({ merchantView, onChange }: { merchantView: boolean; onChange: (v: boolean) => void }) {
   return (
-    <Card className="flex flex-col gap-2 p-4">
-      <h2 className="text-sm font-semibold text-foreground">Preview options</h2>
-      <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
+    <section className="flex flex-col gap-2">
+      <h2 className="text-sm font-semibold text-foreground">Preview</h2>
+      <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/60">
         <input type="checkbox" className="size-4" checked={merchantView} onChange={(e) => onChange(e.target.checked)} data-testid="report-merchant-view" />
-        Preview as the merchant sees it
+        Client view
       </label>
-      <p className="text-xs leading-5 text-muted-foreground">
-        Hides the internal metric IDs. The modelled and tracked labels stay visible either way — a merchant has to see when a figure is
-        attributed rather than measured.
-      </p>
-    </Card>
+      <p className="text-xs leading-5 text-muted-foreground">Hides internal reference codes. Estimate labels always stay visible.</p>
+    </section>
   );
 }
 
-/* ------------------------------------------------------------- frozen ---- */
+/* -------------------------------------------------------------- frozen ---- */
 export function FrozenBanner({ r }: { r: Report }) {
   if (!r.frozen) return null;
   const at = dateTime(r.approvedAt) || dateTime(r.generatedAt);
@@ -137,21 +141,20 @@ export function FrozenBanner({ r }: { r: Report }) {
   );
 }
 
-/* ------------------------------------------------- never in this report --- */
-export function NeverInThisReport() {
+/* --------------------------------------------------------- privacy note --- */
+export function PrivacyProtection() {
   return (
-    <Card className="flex flex-col gap-2 p-4">
+    <section className="flex flex-col gap-2 border-t border-border pt-3.5">
       <div className="flex items-center gap-2">
         <span className="flex size-7 items-center justify-center rounded-md bg-destructive-subtle text-text-destructive">
           <Lock className="size-4" />
         </span>
-        <h2 className="text-sm font-semibold text-foreground">Never in this report</h2>
+        <h2 className="text-sm font-semibold text-foreground">Privacy protection</h2>
       </div>
       <p className="text-xs leading-5 text-muted-foreground">
-        Customer personal data, reviewer names, internal notes and ticket comments, account-health labels, billing, and partner or pipeline
-        data. The generator reads a whitelist and the export refuses to render a blocked field.
+        Personal data, internal notes, billing and pipeline data are excluded automatically.
       </p>
-    </Card>
+    </section>
   );
 }
 
